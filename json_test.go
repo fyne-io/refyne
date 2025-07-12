@@ -1,4 +1,4 @@
-package gui
+package refyne
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	_ "fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/fyne-io/defyne/internal/guidefs"
+	"github.com/fyne-io/refyne/internal/guidefs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

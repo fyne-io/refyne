@@ -1,4 +1,4 @@
-package gui
+package refyne
 
 import (
 	"encoding/json"
@@ -16,7 +16,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/fyne-io/defyne/internal/guidefs"
+	"github.com/fyne-io/refyne/internal/guidefs"
 )
 
 type canvObj struct {

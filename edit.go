@@ -1,11 +1,12 @@
-package gui
+package refyne
 
 import (
 	"reflect"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
-	"github.com/fyne-io/defyne/internal/guidefs"
+
+	"github.com/fyne-io/refyne/internal/guidefs"
 )
 
 // CreateNew returns a new instance of the given widget type

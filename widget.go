@@ -1,10 +1,11 @@
-package gui
+package refyne
 
 import (
 	"reflect"
 
 	"fyne.io/fyne/v2"
-	"github.com/fyne-io/defyne/internal/guidefs"
+
+	"github.com/fyne-io/refyne/internal/guidefs"
 )
 
 // CollectionClassList returns the list of supported collection widget classes.

@@ -1,4 +1,4 @@
-package gui
+package refyne
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/fyne-io/defyne/internal/guidefs"
+	"github.com/fyne-io/refyne/internal/guidefs"
 
 	"fyne.io/fyne/v2"
 )

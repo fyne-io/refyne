@@ -1,9 +1,10 @@
-package gui
+package refyne
 
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
-	"github.com/fyne-io/defyne/internal/guidefs"
+
+	"github.com/fyne-io/refyne/internal/guidefs"
 )
 
 type DefyneContext = guidefs.DefyneContext

@@ -1,4 +1,4 @@
-package gui
+package refyne
 
 import (
 	"image/color"
