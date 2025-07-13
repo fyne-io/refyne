@@ -15,9 +15,9 @@ import (
 )
 
 type layoutInfo struct {
-	Create func(*fyne.Container, DefyneContext) fyne.Layout
-	Edit   func(*fyne.Container, DefyneContext) []*widget.FormItem
-	goText func(*fyne.Container, DefyneContext, map[string]string) string
+	Create func(*fyne.Container, Context) fyne.Layout
+	Edit   func(*fyne.Container, Context) []*widget.FormItem
+	goText func(*fyne.Container, Context, map[string]string) string
 }
 
 var (
@@ -27,7 +27,7 @@ var (
 	// Layouts maps container names to layout information to create and edit containers, and generate code
 	Layouts = map[string]layoutInfo{
 		"Border": {
-			func(c *fyne.Container, d DefyneContext) fyne.Layout {
+			func(c *fyne.Container, d Context) fyne.Layout {
 				props := d.Metadata()[c]
 				topNum := props["top"]
 				topID, _ := strconv.Atoi(topNum)
@@ -54,7 +54,7 @@ var (
 
 				return layout.NewBorderLayout(t, b, l, r)
 			},
-			func(c *fyne.Container, d DefyneContext) []*widget.FormItem {
+			func(c *fyne.Container, d Context) []*widget.FormItem {
 				props := d.Metadata()[c]
 				topNum := props["top"]
 				topID, _ := strconv.Atoi(topNum)
@@ -144,7 +144,7 @@ var (
 					widget.NewFormItem("Middle", widget.NewLabel("(all other widgets)")),
 				}
 			},
-			func(c *fyne.Container, ctx DefyneContext, defs map[string]string) string {
+			func(c *fyne.Container, ctx Context, defs map[string]string) string {
 				props := ctx.Metadata()[c]
 				topNum := props["top"]
 				topID, _ := strconv.Atoi(topNum)
@@ -194,21 +194,21 @@ var (
 			},
 		},
 		"Center": {
-			func(*fyne.Container, DefyneContext) fyne.Layout {
+			func(*fyne.Container, Context) fyne.Layout {
 				return layout.NewCenterLayout()
 			},
 			nil,
 			nil,
 		},
 		"Form": {
-			func(*fyne.Container, DefyneContext) fyne.Layout {
+			func(*fyne.Container, Context) fyne.Layout {
 				return layout.NewFormLayout()
 			},
 			nil,
 			nil,
 		},
 		"Grid": {
-			func(c *fyne.Container, d DefyneContext) fyne.Layout {
+			func(c *fyne.Container, d Context) fyne.Layout {
 				props := d.Metadata()[c]
 				rowCol := props["grid_type"]
 				if rowCol == "" {
@@ -229,7 +229,7 @@ var (
 				}
 				return layout.NewGridLayoutWithColumns(int(num))
 			},
-			func(c *fyne.Container, d DefyneContext) []*widget.FormItem {
+			func(c *fyne.Container, d Context) []*widget.FormItem {
 				props := d.Metadata()[c]
 				rowCol := props["grid_type"]
 				if rowCol == "" {
@@ -269,7 +269,7 @@ var (
 					widget.NewFormItem("Arrange in", vert),
 				}
 			},
-			func(c *fyne.Container, ctx DefyneContext, defs map[string]string) string {
+			func(c *fyne.Container, ctx Context, defs map[string]string) string {
 				props := ctx.Metadata()[c]
 				rowCol := props["grid_type"]
 				if rowCol == "" {
@@ -297,7 +297,7 @@ var (
 			},
 		},
 		"GridWrap": {
-			func(c *fyne.Container, d DefyneContext) fyne.Layout {
+			func(c *fyne.Container, d Context) fyne.Layout {
 				props := d.Metadata()[c]
 				width := props["width"]
 				if width == "" {
@@ -318,7 +318,7 @@ var (
 
 				return layout.NewGridWrapLayout(fyne.NewSize(float32(w), float32(h)))
 			},
-			func(c *fyne.Container, d DefyneContext) []*widget.FormItem {
+			func(c *fyne.Container, d Context) []*widget.FormItem {
 				props := d.Metadata()[c]
 				width := props["width"]
 				if width == "" {
@@ -364,7 +364,7 @@ var (
 			nil,
 		},
 		"HBox": {
-			func(c *fyne.Container, d DefyneContext) fyne.Layout {
+			func(c *fyne.Container, d Context) fyne.Layout {
 				d.Metadata()[c]["dir"] = "horizontal"
 				return layout.NewHBoxLayout()
 			},
@@ -372,21 +372,21 @@ var (
 			nil,
 		},
 		"Max": {
-			func(_ *fyne.Container, _ DefyneContext) fyne.Layout {
+			func(_ *fyne.Container, _ Context) fyne.Layout {
 				return layout.NewStackLayout()
 			},
 			nil,
 			nil,
 		},
 		"Padded": {
-			func(_ *fyne.Container, _ DefyneContext) fyne.Layout {
+			func(_ *fyne.Container, _ Context) fyne.Layout {
 				return layout.NewPaddedLayout()
 			},
 			nil,
 			nil,
 		},
 		"CustomPadded": {
-			func(c *fyne.Container, d DefyneContext) fyne.Layout {
+			func(c *fyne.Container, d Context) fyne.Layout {
 				props := d.Metadata()[c]
 				pad := theme.Padding()
 				padStr := strconv.FormatFloat(float64(pad), 'f', -2, 64)
@@ -429,7 +429,7 @@ var (
 				}
 				return layout.NewCustomPaddedLayout(t, b, l, r)
 			},
-			func(c *fyne.Container, d DefyneContext) []*widget.FormItem {
+			func(c *fyne.Container, d Context) []*widget.FormItem {
 				props := d.Metadata()[c]
 				pad := theme.Padding()
 				padStr := strconv.FormatFloat(float64(pad), 'f', -2, 64)
@@ -510,7 +510,7 @@ var (
 					widget.NewFormItem("Right", rightEnt),
 				}
 			},
-			func(c *fyne.Container, d DefyneContext, defs map[string]string) string {
+			func(c *fyne.Container, d Context, defs map[string]string) string {
 				props := d.Metadata()
 				pad := theme.Padding()
 				padStr := strconv.FormatFloat(float64(pad), 'f', -2, 64)
@@ -550,14 +550,14 @@ var (
 			},
 		},
 		"Stack": {
-			func(c *fyne.Container, d DefyneContext) fyne.Layout {
+			func(c *fyne.Container, d Context) fyne.Layout {
 				return layout.NewStackLayout()
 			},
 			nil,
 			nil,
 		},
 		"VBox": {
-			func(c *fyne.Container, d DefyneContext) fyne.Layout {
+			func(c *fyne.Container, d Context) fyne.Layout {
 				d.Metadata()[c]["dir"] = "vertical"
 				return layout.NewVBoxLayout()
 			},
@@ -605,7 +605,7 @@ func widgetName(o fyne.CanvasObject) string {
 	}
 }
 
-func writeGoString(str *strings.Builder, c DefyneContext,
+func writeGoString(str *strings.Builder, c Context,
 	defs map[string]string, o fyne.CanvasObject) error {
 	clazz := reflect.TypeOf(o).String()
 
@@ -619,7 +619,7 @@ func writeGoString(str *strings.Builder, c DefyneContext,
 	return nil
 }
 
-func writeGoStringOrNil(str *strings.Builder, c DefyneContext,
+func writeGoStringOrNil(str *strings.Builder, c Context,
 	defs map[string]string, o fyne.CanvasObject) {
 	if o == nil {
 		str.WriteString("nil")
@@ -629,7 +629,7 @@ func writeGoStringOrNil(str *strings.Builder, c DefyneContext,
 	_ = writeGoString(str, c, defs, o)
 }
 
-func writeGoStringExcluding(str *strings.Builder, skip func(object fyne.CanvasObject) bool, c DefyneContext,
+func writeGoStringExcluding(str *strings.Builder, skip func(object fyne.CanvasObject) bool, c Context,
 	defs map[string]string, objs ...fyne.CanvasObject) {
 	for i, o := range objs {
 		if skip != nil && skip(o) {

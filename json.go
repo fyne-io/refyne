@@ -53,7 +53,7 @@ type cont struct {
 
 // DecodeObject returns a tree of `CanvasObject` elements from the provided JSON `Reader` and
 // updates the metadata map to include any additional information.
-func DecodeObject(r io.Reader, d DefyneContext) (fyne.CanvasObject, error) {
+func DecodeObject(r io.Reader, d Context) (fyne.CanvasObject, error) {
 	guidefs.InitOnce()
 
 	var data interface{}
@@ -68,7 +68,7 @@ func DecodeObject(r io.Reader, d DefyneContext) (fyne.CanvasObject, error) {
 
 // DecodeMap returns a tree of `CanvasObject` elements from the provided JSON map and
 // updates the metadata map to include any additional information.
-func DecodeMap(m map[string]interface{}, d DefyneContext) (fyne.CanvasObject, error) {
+func DecodeMap(m map[string]interface{}, d Context) (fyne.CanvasObject, error) {
 	guidefs.InitOnce()
 
 	switch m["Type"] {
@@ -245,7 +245,7 @@ func DecodeMap(m map[string]interface{}, d DefyneContext) (fyne.CanvasObject, er
 
 // EncodeObject writes a JSON stream for the tree of `CanvasObject` elements provided.
 // If an error occurs it will be returned, otherwise nil.
-func EncodeObject(obj fyne.CanvasObject, d DefyneContext, w io.Writer) error {
+func EncodeObject(obj fyne.CanvasObject, d Context, w io.Writer) error {
 	guidefs.InitOnce()
 	tree, _ := EncodeMap(obj, d)
 
@@ -256,7 +256,7 @@ func EncodeObject(obj fyne.CanvasObject, d DefyneContext, w io.Writer) error {
 
 // EncodeMap returns a JSON map for the tree of `CanvasObject` elements provided, using additional metadata if required.
 // If an error occurs it will be returned, otherwise nil.
-func EncodeMap(obj fyne.CanvasObject, d DefyneContext) (interface{}, error) {
+func EncodeMap(obj fyne.CanvasObject, d Context) (interface{}, error) {
 	guidefs.InitOnce()
 
 	props := d.Metadata()[obj]
@@ -470,7 +470,7 @@ func encodeWidget(obj fyne.CanvasObject, name string, actions map[string]string,
 	return w
 }
 
-func decodeAccordionItem(m map[string]interface{}, d DefyneContext) *widget.AccordionItem {
+func decodeAccordionItem(m map[string]interface{}, d Context) *widget.AccordionItem {
 	f := &widget.AccordionItem{}
 	if str, ok := m["Title"]; ok {
 		f.Title = str.(string)
@@ -484,7 +484,7 @@ func decodeAccordionItem(m map[string]interface{}, d DefyneContext) *widget.Acco
 	return f
 }
 
-func decodeFormItem(m map[string]interface{}, d DefyneContext) *widget.FormItem {
+func decodeFormItem(m map[string]interface{}, d Context) *widget.FormItem {
 	f := &widget.FormItem{}
 	if str, ok := m["HintText"]; ok {
 		f.HintText = str.(string)
@@ -566,7 +566,7 @@ func decodeRichTextStyle(m map[string]interface{}) (s widget.RichTextStyle) {
 	return
 }
 
-func decodeFields(e reflect.Value, in map[string]interface{}, d DefyneContext) error {
+func decodeFields(e reflect.Value, in map[string]interface{}, d Context) error {
 	for k, v := range in {
 		f := e.FieldByName(k)
 
@@ -682,7 +682,7 @@ func decodeFields(e reflect.Value, in map[string]interface{}, d DefyneContext) e
 	return nil
 }
 
-func decodeWidget(m map[string]interface{}, d DefyneContext) fyne.CanvasObject {
+func decodeWidget(m map[string]interface{}, d Context) fyne.CanvasObject {
 	class, ok := m["Type"].(string)
 	if !ok {
 		log.Println("Failed to detect type of object", m)

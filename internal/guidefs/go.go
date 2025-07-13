@@ -9,7 +9,7 @@ import (
 )
 
 // GoString generates Go code for the given type and object
-func GoString(clazz string, obj fyne.CanvasObject, c DefyneContext, defs map[string]string) string {
+func GoString(clazz string, obj fyne.CanvasObject, c Context, defs map[string]string) string {
 	info := Lookup(clazz)
 	if info == nil {
 		return ""

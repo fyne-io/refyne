@@ -7,7 +7,7 @@ import (
 	"github.com/fyne-io/refyne/internal/guidefs"
 )
 
-type DefyneContext = guidefs.DefyneContext
+type Context = guidefs.Context
 
 type context struct {
 	meta map[fyne.CanvasObject]map[string]string
@@ -15,7 +15,7 @@ type context struct {
 
 // DefaultContext returns a simple context with an empty metadata map that will
 // defer to the default theme for theming information.
-func DefaultContext() DefyneContext {
+func DefaultContext() Context {
 	return &context{meta: make(map[fyne.CanvasObject]map[string]string)}
 }
 

@@ -10,7 +10,7 @@ import (
 )
 
 // CreateNew returns a new instance of the given widget type
-func CreateNew(name string, d DefyneContext) fyne.CanvasObject {
+func CreateNew(name string, d Context) fyne.CanvasObject {
 	guidefs.InitOnce()
 
 	if match := guidefs.Lookup(name); match != nil {
@@ -22,7 +22,7 @@ func CreateNew(name string, d DefyneContext) fyne.CanvasObject {
 
 // EditorFor returns an array of FormItems for editing, taking the widget, properties, callback to refresh the form items,
 // and an optional callback that fires after changes to the widget.
-func EditorFor(o fyne.CanvasObject, d DefyneContext, refresh func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
+func EditorFor(o fyne.CanvasObject, d Context, refresh func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
 	guidefs.InitOnce()
 
 	_, clazz := getTypeOf(o)
@@ -39,7 +39,7 @@ func EditorFor(o fyne.CanvasObject, d DefyneContext, refresh func([]*widget.Form
 }
 
 // GoStringFor generates the Go code for the given widget
-func GoStringFor(o fyne.CanvasObject, d DefyneContext, defs map[string]string) string {
+func GoStringFor(o fyne.CanvasObject, d Context, defs map[string]string) string {
 	guidefs.InitOnce()
 
 	name := reflect.TypeOf(o).String()

@@ -14,7 +14,7 @@ import (
 )
 
 // ExportGo generates a full Go package for the given object and writes it to the provided file handle
-func ExportGo(obj fyne.CanvasObject, d DefyneContext, name string, w io.Writer) error {
+func ExportGo(obj fyne.CanvasObject, d Context, name string, w io.Writer) error {
 	guidefs.InitOnce()
 
 	packagesList := packagesRequired(obj, d)
@@ -31,7 +31,7 @@ func ExportGo(obj fyne.CanvasObject, d DefyneContext, name string, w io.Writer) 
 }
 
 // ExportGoPreview generates a preview version of the Go code with a `main()` method for the given object and writes it to the file handle
-func ExportGoPreview(obj fyne.CanvasObject, d DefyneContext, w io.Writer) error {
+func ExportGoPreview(obj fyne.CanvasObject, d Context, w io.Writer) error {
 	guidefs.InitOnce()
 
 	packagesList := packagesRequired(obj, d)
@@ -59,7 +59,7 @@ func main() {
 	return err
 }
 
-func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d DefyneContext, name string) string {
+func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d Context, name string) string {
 	for i := 0; i < len(pkgs); i++ {
 		if pkgs[i] != "fmt" && pkgs[i] != "net/url" && pkgs[i] != "image/color" {
 			pkgs[i] = "fyne.io/fyne/v2/" + pkgs[i]
@@ -132,7 +132,7 @@ func (g *%s) makeUI() fyne.CanvasObject {
 	return string(formatted)
 }
 
-func packagesRequired(obj fyne.CanvasObject, d DefyneContext) []string {
+func packagesRequired(obj fyne.CanvasObject, d Context) []string {
 	ret := []string{"container"}
 	var objs []fyne.CanvasObject
 	if c, ok := obj.(*fyne.Container); ok {
@@ -170,7 +170,7 @@ func packagesRequired(obj fyne.CanvasObject, d DefyneContext) []string {
 	return ret
 }
 
-func packagesRequiredForWidget(w fyne.CanvasObject, d DefyneContext) []string {
+func packagesRequiredForWidget(w fyne.CanvasObject, d Context) []string {
 	name := reflect.TypeOf(w).String()
 	if pkgs := guidefs.Lookup(name).Packages; pkgs != nil {
 		return pkgs(w, d)
@@ -183,7 +183,7 @@ func packagesRequiredForWidget(w fyne.CanvasObject, d DefyneContext) []string {
 	return []string{}
 }
 
-func varsRequired(obj fyne.CanvasObject, d DefyneContext) (widgets, containers []string) {
+func varsRequired(obj fyne.CanvasObject, d Context) (widgets, containers []string) {
 	name := d.Metadata()[obj]["name"]
 
 	if c, ok := obj.(*fyne.Container); ok {

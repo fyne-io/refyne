@@ -24,12 +24,12 @@ func initGraphics() {
 	Graphics = map[string]WidgetInfo{
 		"*canvas.Circle": {
 			Name: "Circle",
-			Create: func(DefyneContext) fyne.CanvasObject {
+			Create: func(Context) fyne.CanvasObject {
 				rect := canvas.NewCircle(color.Black)
 				rect.StrokeColor = color.Black
 				return rect
 			},
-			Edit: func(obj fyne.CanvasObject, _ DefyneContext, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
+			Edit: func(obj fyne.CanvasObject, _ Context, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
 				r := obj.(*canvas.Circle)
 				return []*widget.FormItem{
 					widget.NewFormItem("Fill", newColorButton(r.FillColor, func(c color.Color) {
@@ -49,16 +49,16 @@ func initGraphics() {
 					})),
 				}
 			},
-			Packages: func(_ fyne.CanvasObject, _ DefyneContext) []string {
+			Packages: func(_ fyne.CanvasObject, _ Context) []string {
 				return []string{"canvas", "image/color"}
 			},
 		},
 		"*canvas.LinearGradient": {
 			Name: "LinearGradient",
-			Create: func(DefyneContext) fyne.CanvasObject {
+			Create: func(Context) fyne.CanvasObject {
 				return &canvas.LinearGradient{StartColor: color.White}
 			},
-			Edit: func(obj fyne.CanvasObject, _ DefyneContext, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
+			Edit: func(obj fyne.CanvasObject, _ Context, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
 				r := obj.(*canvas.LinearGradient)
 				angleSlide := widget.NewSlider(0, 360)
 				angleSlide.Step = 90
@@ -81,16 +81,16 @@ func initGraphics() {
 					widget.NewFormItem("Angle", angleSlide),
 				}
 			},
-			Packages: func(_ fyne.CanvasObject, _ DefyneContext) []string {
+			Packages: func(_ fyne.CanvasObject, _ Context) []string {
 				return []string{"canvas", "image/color"}
 			},
 		},
 		"*canvas.RadialGradient": {
 			Name: "RadialGradient",
-			Create: func(DefyneContext) fyne.CanvasObject {
+			Create: func(Context) fyne.CanvasObject {
 				return &canvas.RadialGradient{StartColor: color.White}
 			},
-			Edit: func(obj fyne.CanvasObject, _ DefyneContext, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
+			Edit: func(obj fyne.CanvasObject, _ Context, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
 				r := obj.(*canvas.RadialGradient)
 				return []*widget.FormItem{
 					widget.NewFormItem("Start", newColorButton(r.StartColor, func(c color.Color) {
@@ -105,18 +105,18 @@ func initGraphics() {
 					})),
 				}
 			},
-			Packages: func(_ fyne.CanvasObject, _ DefyneContext) []string {
+			Packages: func(_ fyne.CanvasObject, _ Context) []string {
 				return []string{"canvas", "image/color"}
 			},
 		},
 		"*canvas.Rectangle": {
 			Name: "Rectangle",
-			Create: func(DefyneContext) fyne.CanvasObject {
+			Create: func(Context) fyne.CanvasObject {
 				rect := canvas.NewRectangle(color.Black)
 				rect.StrokeColor = color.Black
 				return rect
 			},
-			Edit: func(obj fyne.CanvasObject, _ DefyneContext, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
+			Edit: func(obj fyne.CanvasObject, _ Context, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
 				r := obj.(*canvas.Rectangle)
 				return []*widget.FormItem{
 					widget.NewFormItem("Fill", newColorButton(r.FillColor, func(c color.Color) {
@@ -141,17 +141,17 @@ func initGraphics() {
 					})),
 				}
 			},
-			Packages: func(_ fyne.CanvasObject, _ DefyneContext) []string {
+			Packages: func(_ fyne.CanvasObject, _ Context) []string {
 				return []string{"canvas", "image/color"}
 			},
 		},
 		"*canvas.Text": {
 			Name: "Text",
-			Create: func(DefyneContext) fyne.CanvasObject {
+			Create: func(Context) fyne.CanvasObject {
 				rect := canvas.NewText("Text", color.Black)
 				return rect
 			},
-			Edit: func(obj fyne.CanvasObject, _ DefyneContext, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
+			Edit: func(obj fyne.CanvasObject, _ Context, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
 				t := obj.(*canvas.Text)
 				e := widget.NewEntry()
 				e.SetText(t.Text)
@@ -197,7 +197,7 @@ func initGraphics() {
 					widget.NewFormItem("Monospace", mono),
 				}
 			},
-			Packages: func(_ fyne.CanvasObject, _ DefyneContext) []string {
+			Packages: func(_ fyne.CanvasObject, _ Context) []string {
 				return []string{"canvas", "image/color"}
 			},
 		},
