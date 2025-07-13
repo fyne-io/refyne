@@ -49,6 +49,7 @@ func main() {
 	myApp := app.New()
 	myWindow := myApp.NewWindow("Hello")
 	gui := newGUI()
+	gui.win = myWindow
 	myWindow.SetContent(gui.makeUI())
 	myWindow.ShowAndRun()
 }
@@ -103,6 +104,8 @@ import (
 )
 
 type %s struct {
+	win fyne.Window
+
 %s
 }
 
