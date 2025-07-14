@@ -33,9 +33,10 @@ type cntObj struct {
 }
 
 type form struct {
-	Type   string
-	Name   string                 `json:",omitempty"`
-	Struct map[string]interface{} `json:",omitempty"`
+	Type       string
+	Name       string                 `json:",omitempty"`
+	Struct     map[string]interface{} `json:",omitempty"`
+	Properties map[string]string      `json:",omitempty"`
 }
 
 type formItem struct {
@@ -395,7 +396,7 @@ func EncodeMap(obj fyne.CanvasObject, d Context) (interface{}, error) {
 		return &node, nil
 	case fyne.Widget:
 		if form, ok := c.(*widget.Form); ok {
-			return encodeForm(form, name), nil
+			return encodeForm(form, name, props), nil
 		}
 		return encodeWidget(c, name, actions, props), nil
 	case *fyne.Container:
@@ -426,7 +427,7 @@ func EncodeMap(obj fyne.CanvasObject, d Context) (interface{}, error) {
 	return &canvObj{Type: reflect.TypeOf(obj).String(), Name: name, Struct: obj}, nil
 }
 
-func encodeForm(obj *widget.Form, name string) interface{} {
+func encodeForm(obj *widget.Form, name string, meta map[string]string) interface{} {
 	var items []*formItem
 	for _, o := range obj.Items {
 		items = append(items,
@@ -446,6 +447,7 @@ func encodeForm(obj *widget.Form, name string) interface{} {
 		"SubmitText": obj.SubmitText,
 		"CancelText": obj.CancelText,
 	}
+	node.Properties = meta
 
 	return &node
 }
@@ -706,6 +708,16 @@ func decodeWidget(m map[string]interface{}, d Context) fyne.CanvasObject {
 	if err != nil {
 		fyne.LogError("Failed to handle type "+class, err)
 	}
+
+	if form, ok := obj.(*widget.Form); ok {
+		if props, ok := m["Properties"].(map[string]any); ok {
+			if hide, ok := props["hideButtons"]; ok && hide == "true" {
+				form.OnCancel = nil
+				form.OnSubmit = nil
+			}
+		}
+	}
+
 	return obj
 }
 

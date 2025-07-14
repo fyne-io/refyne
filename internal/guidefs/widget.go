@@ -539,9 +539,21 @@ func initFormWidget() WidgetInfo {
 			f.OnCancel = func() {}
 			return f
 		},
-		Edit: func(obj fyne.CanvasObject, d Context, refresh func([]*widget.FormItem), _ func()) []*widget.FormItem {
+		Edit: func(obj fyne.CanvasObject, c Context, refresh func([]*widget.FormItem), _ func()) []*widget.FormItem {
 			items := []*widget.FormItem{}
-			formItems := obj.(*widget.Form).Items
+			form := obj.(*widget.Form)
+			formItems := form.Items
+
+			props := c.Metadata()[obj]
+			hidden, _ := strconv.ParseBool(props["hideButtons"])
+			if hidden {
+				form.OnCancel = nil
+				form.OnSubmit = nil
+			} else {
+				form.OnCancel = func() {}
+				form.OnSubmit = func() {}
+			}
+			form.Refresh()
 
 			tidyWidget := func(wid, src fyne.CanvasObject) {
 				switch t := wid.(type) {
@@ -560,8 +572,26 @@ func initFormWidget() WidgetInfo {
 			var editItem, removeItem func(int)
 			add := widget.NewButtonWithIcon("Add...", theme.ContentAddIcon(), nil)
 			addLine := widget.NewFormItem("", add)
-			add.OnTapped = func() {
 
+			hide := widget.NewCheck("", nil)
+			hide.SetChecked(hidden)
+			hide.OnChanged = func(hide bool) {
+				if hide {
+					props["hideButtons"] = "true"
+
+					form.OnCancel = nil
+					form.OnSubmit = nil
+				} else {
+					props["hideButtons"] = "false"
+
+					form.OnCancel = func() {}
+					form.OnSubmit = func() {}
+				}
+				form.Refresh()
+			}
+			hideButtons := widget.NewFormItem("Hide buttons", hide)
+
+			add.OnTapped = func() {
 				insertChose := ""
 				name := widget.NewEntry()
 				options := widget.NewSelect([]string{"Check", "DateEntry", "Entry", "MultiLineEntry", "PasswordEntry", "Select", "Slider"}, func(s string) {
@@ -579,9 +609,9 @@ func initFormWidget() WidgetInfo {
 					}
 
 					class := "*widget." + insertChose
-					wid1 := Lookup(class).Create(d)
+					wid1 := Lookup(class).Create(c)
 					tidyWidget(wid1, wid1)
-					wid2 := Lookup(class).Create(d)
+					wid2 := Lookup(class).Create(c)
 					tidyWidget(wid2, wid2)
 
 					obj.(*widget.Form).Items = nil // TODO fix this too!
@@ -601,7 +631,7 @@ func initFormWidget() WidgetInfo {
 					})
 					row = container.NewBorder(nil, nil, edit, remove, wid2)
 					items = append(items, widget.NewFormItem(insertChose, row))
-					refresh(append(items, addLine))
+					refresh(append(items, hideButtons, addLine))
 				}, w)
 			}
 
@@ -618,7 +648,7 @@ func initFormWidget() WidgetInfo {
 					obj.Refresh()
 
 					items[i].Text = editText.Text
-					refresh(append(items, addLine))
+					refresh(append(items, hideButtons, addLine))
 				}, w)
 			}
 			removeItem = func(i int) {
@@ -629,13 +659,13 @@ func initFormWidget() WidgetInfo {
 				obj.(*widget.Form).Items = formItems
 				obj.Refresh()
 				items = removeFormItem(i, items)
-				refresh(append(items, addLine))
+				refresh(append(items, hideButtons, addLine))
 			}
 
 			for _, o := range formItems {
 				// copy items so the widgets can be in both places
 				class := reflect.TypeOf(o.Widget).String()
-				wid := Lookup(class).Create(d)
+				wid := Lookup(class).Create(c)
 				tidyWidget(wid, o.Widget)
 
 				var row *fyne.Container
@@ -651,18 +681,25 @@ func initFormWidget() WidgetInfo {
 				items = append(items, widget.NewFormItem(o.Text, row))
 			}
 
-			return append(items, addLine)
+			return append(items, hideButtons, addLine)
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
+			form := obj.(*widget.Form)
+			hidden, _ := strconv.ParseBool(c.Metadata()[obj]["hideButtons"])
+
 			props := c.Metadata()
 			str := &strings.Builder{}
 			str.WriteString("&widget.Form{Items: []*widget.FormItem{")
-			for _, i := range obj.(*widget.Form).Items {
+			for _, i := range form.Items {
 				str.WriteString("widget.NewFormItem(\"" + i.Text + "\", ")
 				writeGoStringExcluding(str, nil, c, defs, i.Widget)
 				str.WriteString("),")
 			}
-			str.WriteString("}, OnSubmit: func() {}, OnCancel: func() {}}")
+			str.WriteString("}")
+			if !hidden {
+				str.WriteString(", OnSubmit: func() {}, OnCancel: func() {}")
+			}
+			str.WriteString("}")
 			return widgetRef(props[obj], defs, str.String())
 		},
 	}
