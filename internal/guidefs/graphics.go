@@ -1,8 +1,10 @@
 package guidefs
 
 import (
+	"errors"
 	"fmt"
 	"image/color"
+	"path/filepath"
 	"strconv"
 
 	"fyne.io/fyne/v2"
@@ -53,6 +55,7 @@ func initGraphics() {
 				return []string{"canvas", "image/color"}
 			},
 		},
+		"*canvas.Image": initImageGraphic(),
 		"*canvas.LinearGradient": {
 			Name: "LinearGradient",
 			Create: func(Context) fyne.CanvasObject {
@@ -206,7 +209,165 @@ func initGraphics() {
 	GraphicsNames = extractNames(Graphics)
 }
 
-// TODO tidy the API and move to a widget package
+func initImageGraphic() WidgetInfo {
+	return WidgetInfo{
+		Name: "Image",
+		Create: func(Context) fyne.CanvasObject {
+			return &canvas.Image{}
+		},
+		Edit: func(obj fyne.CanvasObject, c Context, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
+			i := obj.(*canvas.Image)
+			props := c.Metadata()[obj]
+
+			minWidthInput := widget.NewEntry()
+			minWidthInput.SetText(props["minWidth"])
+			minHeightInput := widget.NewEntry()
+			minHeightInput.SetText(props["minHeight"])
+
+			minWidthInput.Validator = func(s string) error {
+				if s == "" {
+					return nil
+				}
+
+				f, err := strconv.ParseFloat(s, 32)
+				if err != nil {
+					return errors.New("invalid number format")
+				}
+				if f < 0 {
+					return errors.New("negative minimum size")
+				}
+				return nil
+			}
+			minHeightInput.Validator = minWidthInput.Validator
+
+			updateMin := func(_ string) {
+				w, err := strconv.ParseFloat(minWidthInput.Text, 32)
+				if err != nil {
+					props["minWidth"] = ""
+					return
+				} else {
+					props["minWidth"] = minWidthInput.Text
+				}
+				h, err := strconv.ParseFloat(minHeightInput.Text, 32)
+				if err != nil {
+					props["minHeight"] = ""
+					return
+				} else {
+					props["minHeight"] = minHeightInput.Text
+				}
+
+				s := fyne.Size{}
+				if w > 0 || h > 0 {
+					s = fyne.NewSize(float32(w), float32(h))
+				}
+				i.SetMinSize(s)
+				onchanged()
+			}
+			minWidthInput.OnChanged = updateMin
+			minHeightInput.OnChanged = updateMin
+
+			fill := widget.NewSelect([]string{"Stretch", "Contain", "Original size"}, func(s string) {
+				mode := canvas.ImageFillStretch
+				switch s {
+				case "Contain":
+					mode = canvas.ImageFillContain
+					updateMin("") // reset possible original fill override
+				case "Original size":
+					mode = canvas.ImageFillOriginal
+				default:
+					updateMin("") // reset possible original fill override
+				}
+				i.FillMode = mode
+				i.Refresh()
+				onchanged()
+			})
+			fill.SetSelectedIndex(int(i.FillMode))
+
+			// TODO move to go:embed for files!
+			pathSelect := widget.NewButton("(No file)", nil)
+			if i.File != "" {
+				pathSelect.SetText(filepath.Base(i.File))
+			}
+			pathSelect.OnTapped = func() {
+				dialog.ShowFileOpen(func(r fyne.URIReadCloser, err error) {
+					path := ""
+					if r != nil && err == nil {
+						_ = r.Close()
+						path = r.URI().Path()
+					}
+
+					i.File = path
+					if path == "" {
+						i.Image = nil
+						pathSelect.SetText("(No file)")
+					} else {
+						pathSelect.SetText(r.URI().Name())
+					}
+					i.Refresh()
+					onchanged()
+				}, fyne.CurrentApp().Driver().AllWindows()[0])
+			}
+
+			resSelect := newIconSelectorButton(i.Resource, func(res fyne.Resource) {
+				i.Resource = res
+				i.Refresh()
+				onchanged()
+			}, true)
+			resSelect.SetIcon(i.Resource)
+
+			return []*widget.FormItem{
+				widget.NewFormItem("Min Width", minWidthInput),
+				widget.NewFormItem("Min Height", minHeightInput),
+				widget.NewFormItem("Fill mode", fill),
+				widget.NewFormItem("Path", pathSelect),
+				widget.NewFormItem("Resource", resSelect),
+			}
+		},
+		Packages: func(obj fyne.CanvasObject, _ Context) []string {
+			i := obj.(*canvas.Image)
+			if i.Resource != nil {
+				return []string{"canvas", "theme"}
+			}
+			return []string{"canvas"}
+		},
+		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
+			i := obj.(*canvas.Image)
+			props := c.Metadata()[obj]
+			minWidth, _ := props["minWidth"]
+			minHeight, _ := props["minHeight"]
+			hasMin := (minWidth != "" && minWidth != "0") || (minHeight != "" && minHeight != "0")
+
+			code := ""
+			if i.Resource != nil {
+				res := "theme." + IconName(i.Resource) + "()"
+
+				if !hasMin && i.FillMode == canvas.ImageFillStretch {
+					code = fmt.Sprintf("canvas.NewImageFromResource(%s)", res)
+				} else {
+					code = fmt.Sprintf("&canvas.Image{Resource: %s, FillMode: %s}", res, fillName(i.FillMode))
+
+					if hasMin {
+						code = fmt.Sprintf("func() *canvas.Image {"+
+							"img := %s; img.SetMinSize(%#v); return img}()", code, i.MinSize())
+					}
+				}
+			} else {
+				if !hasMin && i.FillMode == canvas.ImageFillStretch {
+					code = fmt.Sprintf("canvas.NewImageFromFile(\"%s\")", i.File)
+				} else {
+					code = fmt.Sprintf("&canvas.Image{File: \"%s\", FillMode: %s}", i.File, fillName(i.FillMode))
+
+					if hasMin {
+						code = fmt.Sprintf("func() *canvas.Image {"+
+							"img := %s; img.SetMinSize(%#v); return img}()", code, i.MinSize())
+					}
+				}
+			}
+
+			return widgetRef(props, defs, code)
+		},
+	}
+}
 
 func newColorButton(c color.Color, fn func(color.Color)) fyne.CanvasObject {
 	// TODO get the window passed in somehow
