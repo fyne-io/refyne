@@ -62,7 +62,27 @@ func initContainers() {
 
 				str := &strings.Builder{}
 				if l == "Form" {
-					str.WriteString("container.New(layout.NewFormLayout(), ")
+					str.WriteString("container.New(layout.NewFormLayout(),\n")
+				}
+				if l == "GridWrap" {
+					width := props[c]["width"]
+					if width == "" {
+						width = "100"
+					}
+					height := props[c]["height"]
+					if height == "" {
+						height = "100"
+					}
+					w, err := strconv.ParseInt(width, 0, 0)
+					if err != nil {
+						w = 100
+					}
+					h, err := strconv.ParseInt(height, 0, 0)
+					if err != nil {
+						h = 100
+					}
+
+					str.WriteString(fmt.Sprintf("container.New(layout.NewGridWrapLayout(fyne.NewSize(float32(%d), float32(%d))),\n", w, h))
 				} else {
 					str.WriteString(fmt.Sprintf("container.New%s(", l))
 				}

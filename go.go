@@ -138,7 +138,7 @@ func packagesRequired(obj fyne.CanvasObject, d Context) []string {
 	if c, ok := obj.(*fyne.Container); ok {
 		objs = c.Objects
 		layout, ok := d.Metadata()[c]["layout"]
-		if ok && (layout == "Form" || layout == "CustomPadded") {
+		if ok && (layout == "Form" || layout == "CustomPadded" || layout == "GridWrap") {
 			ret = append(ret, "layout")
 		}
 	} else {
