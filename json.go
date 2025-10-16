@@ -511,7 +511,7 @@ func decodeFromMap(m map[string]interface{}, in interface{}) {
 		switch val.Type().Kind() {
 		case reflect.Ptr:
 			continue
-		case reflect.Uint8:
+		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 			val.SetUint(uint64(reflect.ValueOf(v).Float()))
 		default:
 			val.Set(reflect.ValueOf(v))
@@ -655,17 +655,25 @@ func decodeFields(e reflect.Value, in map[string]interface{}, d Context) error {
 				f.Set(reflect.ValueOf(&t))
 			}
 		case "color.Color":
-			c := &color.NRGBA{}
+			var c color.Color
 			val := reflect.ValueOf(v)
 			if v == nil {
 				continue
 			}
 
+			data := val.Interface().(map[string]interface{})
+			if _, isGray := data["Y"]; isGray {
+				c = &color.Gray16{}
+			} else {
+				c = &color.NRGBA{}
+			}
 			decodeFromMap(val.Interface().(map[string]interface{}), c)
 			f.Set(reflect.ValueOf(c))
 		default:
 			if strings.Index(typeName, "int") == 0 {
 				f.SetInt(int64(reflect.ValueOf(v).Float()))
+			} else if strings.Index(typeName, "uint") == 0 {
+				f.SetUint(uint64(reflect.ValueOf(v).Float()))
 			} else if typeName == "float32" {
 				f.SetFloat(reflect.ValueOf(v).Float())
 			} else if v != nil {
