@@ -22,6 +22,53 @@ var (
 
 func initGraphics() {
 	Graphics = map[string]WidgetInfo{
+		"*canvas.Arc": {
+			Name: "Arc",
+			Create: func(Context) fyne.CanvasObject {
+				rect := canvas.NewArc(0, 90, 0.5, color.Black)
+				rect.StrokeColor = color.Black
+				return rect
+			},
+			Edit: func(obj fyne.CanvasObject, _ Context, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
+				a := obj.(*canvas.Arc)
+				return []*widget.FormItem{
+					widget.NewFormItem("Start Angle", newIntSliderButton(float64(a.StartAngle), -360, 360, func(f float64) {
+						a.StartAngle = float32(f)
+						a.Refresh()
+						onchanged()
+					})),
+					widget.NewFormItem("End Angle", newIntSliderButton(float64(a.EndAngle), -360, 360, func(f float64) {
+						a.EndAngle = float32(f)
+						a.Refresh()
+						onchanged()
+					})),
+					widget.NewFormItem("Fill", newColorButton(a.FillColor, func(c color.Color) {
+						a.FillColor = c
+						a.Refresh()
+						onchanged()
+					})),
+					widget.NewFormItem("Cutout Ratio", newRatioSliderButton(float64(a.CutoutRatio), 0, 1, func(f float64) {
+						a.CutoutRatio = float32(f)
+						a.Refresh()
+						onchanged()
+					})),
+
+					widget.NewFormItem("Stroke", newIntSliderButton(float64(a.StrokeWidth), 0, 32, func(f float64) {
+						a.StrokeWidth = float32(f)
+						a.Refresh()
+						onchanged()
+					})),
+					widget.NewFormItem("Color", newColorButton(a.StrokeColor, func(c color.Color) {
+						a.StrokeColor = c
+						a.Refresh()
+						onchanged()
+					})),
+				}
+			},
+			Packages: func(_ fyne.CanvasObject, _ Context) []string {
+				return []string{"canvas", "image/color"}
+			},
+		},
 		"*canvas.Circle": {
 			Name: "Circle",
 			Create: func(Context) fyne.CanvasObject {
@@ -37,7 +84,7 @@ func initGraphics() {
 						r.Refresh()
 						onchanged()
 					})),
-					widget.NewFormItem("Stroke", newSliderButton(float64(r.StrokeWidth), 0, 32, func(f float64) {
+					widget.NewFormItem("Stroke", newIntSliderButton(float64(r.StrokeWidth), 0, 32, func(f float64) {
 						r.StrokeWidth = float32(f)
 						r.Refresh()
 						onchanged()
@@ -85,6 +132,48 @@ func initGraphics() {
 				return []string{"canvas", "image/color"}
 			},
 		},
+		"*canvas.Polygon": {
+			Name: "Polygon",
+			Create: func(Context) fyne.CanvasObject {
+				rect := canvas.NewPolygon(5, color.Black)
+				rect.StrokeColor = color.Black
+				return rect
+			},
+			Edit: func(obj fyne.CanvasObject, _ Context, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
+				p := obj.(*canvas.Polygon)
+				return []*widget.FormItem{
+					widget.NewFormItem("Sides", newIntSliderButton(float64(p.Sides), 3, 18, func(f float64) {
+						p.Sides = uint(f)
+						p.Refresh()
+						onchanged()
+					})),
+					widget.NewFormItem("Fill", newColorButton(p.FillColor, func(c color.Color) {
+						p.FillColor = c
+						p.Refresh()
+						onchanged()
+					})),
+					widget.NewFormItem("Angle", newIntSliderButton(float64(p.Angle), -360, 360, func(f float64) {
+						p.Angle = float32(f)
+						p.Refresh()
+						onchanged()
+					})),
+
+					widget.NewFormItem("Stroke", newIntSliderButton(float64(p.StrokeWidth), 0, 32, func(f float64) {
+						p.StrokeWidth = float32(f)
+						p.Refresh()
+						onchanged()
+					})),
+					widget.NewFormItem("Color", newColorButton(p.StrokeColor, func(c color.Color) {
+						p.StrokeColor = c
+						p.Refresh()
+						onchanged()
+					})),
+				}
+			},
+			Packages: func(_ fyne.CanvasObject, _ Context) []string {
+				return []string{"canvas", "image/color"}
+			},
+		},
 		"*canvas.RadialGradient": {
 			Name: "RadialGradient",
 			Create: func(Context) fyne.CanvasObject {
@@ -124,12 +213,12 @@ func initGraphics() {
 						r.Refresh()
 						onchanged()
 					})),
-					widget.NewFormItem("Corner", newSliderButton(float64(r.CornerRadius), 0, 32, func(f float64) {
+					widget.NewFormItem("Corner", newIntSliderButton(float64(r.CornerRadius), 0, 32, func(f float64) {
 						r.CornerRadius = float32(f)
 						r.Refresh()
 						onchanged()
 					})),
-					widget.NewFormItem("Stroke", newSliderButton(float64(r.StrokeWidth), 0, 32, func(f float64) {
+					widget.NewFormItem("Stroke", newIntSliderButton(float64(r.StrokeWidth), 0, 32, func(f float64) {
 						r.StrokeWidth = float32(f)
 						r.Refresh()
 						onchanged()
@@ -187,7 +276,7 @@ func initGraphics() {
 						t.Refresh()
 						onchanged()
 					})),
-					widget.NewFormItem("TextSize", newSliderButton(float64(t.TextSize), 4, 64, func(f float64) {
+					widget.NewFormItem("TextSize", newIntSliderButton(float64(t.TextSize), 4, 64, func(f float64) {
 						t.TextSize = float32(f)
 						t.Refresh()
 						onchanged()
@@ -260,11 +349,20 @@ func (c *colorTapper) setColor(col color.Color) {
 	c.r.Refresh()
 }
 
-func newSliderButton(f float64, start, end float64, fn func(float64)) fyne.CanvasObject {
+func newIntSliderButton(f float64, start, end float64, fn func(float64)) fyne.CanvasObject {
+	return newSliderButtonWithConversion(f, start, end, 1, "%0.0f", fn)
+}
+
+func newRatioSliderButton(f float64, start, end float64, fn func(float64)) fyne.CanvasObject {
+	return newSliderButtonWithConversion(f, start, end, 0.01, "%0.2f", fn)
+}
+
+func newSliderButtonWithConversion(f float64, start, end, step float64, format string, fn func(float64)) fyne.CanvasObject {
 	input := widget.NewEntry()
 	input.SetText(strconv.Itoa(int(f)))
 	slide := widget.NewSlider(start, end)
 	slide.SetValue(f)
+	slide.Step = step
 
 	input.OnChanged = func(s string) {
 		f, err := strconv.ParseFloat(s, 64)
@@ -276,7 +374,7 @@ func newSliderButton(f float64, start, end float64, fn func(float64)) fyne.Canva
 		fn(f)
 	}
 	slide.OnChanged = func(f float64) {
-		input.SetText(fmt.Sprintf("%0.0f", f)) // format like an int
+		input.SetText(fmt.Sprintf(format, f)) // format like an int
 		fn(f)
 	}
 	return container.NewBorder(nil, nil, input, nil, slide)
