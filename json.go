@@ -8,10 +8,12 @@ import (
 	"log"
 	"net/url"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -232,6 +234,17 @@ func DecodeMap(m map[string]interface{}, d Context) (fyne.CanvasObject, error) {
 		props["name"] = name.(string)
 	}
 
+	if setMin, ok := obj.(interface{ SetMinSize(fyne.Size) }); ok {
+		minWithStr, _ := props["minWidth"]
+		minHeightStr, _ := props["minHeight"]
+		if (minWithStr != "" && minWithStr != "0") || (minHeightStr != "" && minHeightStr != "0") {
+			minWidth, _ := strconv.ParseFloat(minWithStr, 64)
+			minHeight, _ := strconv.ParseFloat(minHeightStr, 64)
+
+			setMin.SetMinSize(fyne.NewSize(float32(minWidth), float32(minHeight)))
+		}
+	}
+
 	if set, ok := m["Actions"]; ok {
 		if actions, ok := set.(map[string]any); ok {
 			for k, v := range actions {
@@ -277,6 +290,23 @@ func EncodeMap(obj fyne.CanvasObject, d Context) (interface{}, error) {
 	}
 
 	switch c := obj.(type) {
+	case *canvas.Image:
+		img := c.Image
+		res := c.Resource
+		go func() { // TODO find a better way to reset this after encoding
+			time.Sleep(time.Millisecond * 100)
+			c.Image = img
+			c.Resource = res
+		}()
+
+		c.Image = nil
+		if c.Resource == nil {
+			return encodeWidget(c, name, actions, props), nil
+		}
+
+		c.Resource = guidefs.WrapResource(c.Resource)
+		wid := encodeWidget(c, name, actions, props)
+		return wid, nil
 	case *widget.Accordion:
 		node := &cntObj{Struct: make(map[string]interface{})}
 		node.Type = "*widget.Accordion"
@@ -580,7 +610,8 @@ func decodeFields(e reflect.Value, in map[string]interface{}, d Context) error {
 		typeName := f.Type().String()
 		switch typeName {
 		case "fyne.TextAlign", "fyne.TextTruncation", "fyne.TextWrap", "widget.ButtonAlign", "widget.ButtonImportance",
-			"widget.ButtonIconPlacement", "widget.Importance", "widget.Orientation", "widget.ScrollDirection", "fyne.ScrollDirection":
+			"widget.ButtonIconPlacement", "widget.Importance", "widget.Orientation", "widget.ScrollDirection", "fyne.ScrollDirection",
+			"canvas.ImageFill", "canvas.ImageScale":
 			f.SetInt(int64(reflect.ValueOf(v).Float()))
 		case "fyne.TextStyle":
 			f.Set(reflect.ValueOf(decodeTextStyle(reflect.ValueOf(v).Interface().(map[string]interface{}))))

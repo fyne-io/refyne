@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
@@ -18,6 +19,17 @@ func directionName(d container.ScrollDirection) string {
 		return "container.ScrollVerticalOnly"
 	default:
 		return "container.ScrollNone"
+	}
+}
+
+func fillName(f canvas.ImageFill) string {
+	switch f {
+	case canvas.ImageFillContain:
+		return "canvas.ImageFillContain"
+	case canvas.ImageFillOriginal:
+		return "canvas.ImageFillOriginal"
+	default:
+		return "canvas.ImageFillStretch"
 	}
 }
 
