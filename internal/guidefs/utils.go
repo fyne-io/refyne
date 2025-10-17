@@ -28,6 +28,8 @@ func fillName(f canvas.ImageFill) string {
 		return "canvas.ImageFillContain"
 	case canvas.ImageFillOriginal:
 		return "canvas.ImageFillOriginal"
+	case canvas.ImageFillCover:
+		return "canvas.ImageFillCover"
 	default:
 		return "canvas.ImageFillStretch"
 	}

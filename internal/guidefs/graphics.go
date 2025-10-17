@@ -365,22 +365,25 @@ func initImageGraphic() WidgetInfo {
 			minWidthInput.OnChanged = updateMin
 			minHeightInput.OnChanged = updateMin
 
-			fill := widget.NewSelect([]string{"Stretch", "Contain", "Original size"}, func(s string) {
+			fill := widget.NewSelect([]string{"Stretch", "Contain", "Cover"}, func(s string) {
 				mode := canvas.ImageFillStretch
 				switch s {
 				case "Contain":
 					mode = canvas.ImageFillContain
-					updateMin("") // reset possible original fill override
-				case "Original size":
-					mode = canvas.ImageFillOriginal
-				default:
-					updateMin("") // reset possible original fill override
+				case "Cover":
+					mode = canvas.ImageFillCover
 				}
 				i.FillMode = mode
 				i.Refresh()
 				onchanged()
 			})
 			fill.SetSelectedIndex(int(i.FillMode))
+
+			cornerRadius := newIntSliderButton(float64(i.CornerRadius), 0, 32, func(f float64) {
+				i.CornerRadius = float32(f)
+				i.Refresh()
+				onchanged()
+			})
 
 			// TODO move to go:embed for files!
 			pathSelect := widget.NewButton("(No file)", nil)
@@ -418,6 +421,7 @@ func initImageGraphic() WidgetInfo {
 				widget.NewFormItem("Min Width", minWidthInput),
 				widget.NewFormItem("Min Height", minHeightInput),
 				widget.NewFormItem("Fill mode", fill),
+				widget.NewFormItem("Corner", cornerRadius),
 				widget.NewFormItem("Path", pathSelect),
 				widget.NewFormItem("Resource", resSelect),
 			}
@@ -440,10 +444,10 @@ func initImageGraphic() WidgetInfo {
 			if i.Resource != nil {
 				res := "theme." + IconName(i.Resource) + "()"
 
-				if !hasMin && i.FillMode == canvas.ImageFillStretch {
+				if !hasMin && i.FillMode == canvas.ImageFillStretch && i.CornerRadius == 0 {
 					code = fmt.Sprintf("canvas.NewImageFromResource(%s)", res)
 				} else {
-					code = fmt.Sprintf("&canvas.Image{Resource: %s, FillMode: %s}", res, fillName(i.FillMode))
+					code = fmt.Sprintf("&canvas.Image{Resource: %s, FillMode: %s, CornerRadius: %f}", res, fillName(i.FillMode), i.CornerRadius)
 
 					if hasMin {
 						code = fmt.Sprintf("func() *canvas.Image {"+
@@ -451,10 +455,10 @@ func initImageGraphic() WidgetInfo {
 					}
 				}
 			} else {
-				if !hasMin && i.FillMode == canvas.ImageFillStretch {
+				if !hasMin && i.FillMode == canvas.ImageFillStretch && i.CornerRadius == 0 {
 					code = fmt.Sprintf("canvas.NewImageFromFile(\"%s\")", i.File)
 				} else {
-					code = fmt.Sprintf("&canvas.Image{File: \"%s\", FillMode: %s}", i.File, fillName(i.FillMode))
+					code = fmt.Sprintf("&canvas.Image{File: \"%s\", FillMode: %s, CornerRadius: %f}", i.File, fillName(i.FillMode), i.CornerRadius)
 
 					if hasMin {
 						code = fmt.Sprintf("func() *canvas.Image {"+
