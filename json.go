@@ -235,8 +235,8 @@ func DecodeMap(m map[string]interface{}, d Context) (fyne.CanvasObject, error) {
 	}
 
 	if setMin, ok := obj.(interface{ SetMinSize(fyne.Size) }); ok {
-		minWithStr, _ := props["minWidth"]
-		minHeightStr, _ := props["minHeight"]
+		minWithStr := props["minWidth"]
+		minHeightStr := props["minHeight"]
 		if (minWithStr != "" && minWithStr != "0") || (minHeightStr != "" && minHeightStr != "0") {
 			minWidth, _ := strconv.ParseFloat(minWithStr, 64)
 			minHeight, _ := strconv.ParseFloat(minHeightStr, 64)
@@ -759,9 +759,3 @@ func decodeWidget(m map[string]interface{}, d Context) fyne.CanvasObject {
 
 	return obj
 }
-
-type toolbarItem struct {
-	Type string
-}
-
-func (toolbarItem) ToolbarObject() fyne.CanvasObject { return nil }

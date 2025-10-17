@@ -435,8 +435,8 @@ func initImageGraphic() WidgetInfo {
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
 			i := obj.(*canvas.Image)
 			props := c.Metadata()[obj]
-			minWidth, _ := props["minWidth"]
-			minHeight, _ := props["minHeight"]
+			minWidth := props["minWidth"]
+			minHeight := props["minHeight"]
 			hasMin := (minWidth != "" && minWidth != "0") || (minHeight != "" && minHeight != "0")
 
 			code := ""
