@@ -47,6 +47,11 @@ func initGraphics() {
 						a.Refresh()
 						onchanged()
 					})),
+					widget.NewFormItem("Corner", newIntSliderButton(float64(a.CornerRadius), 0, 32, func(f float64) {
+						a.CornerRadius = float32(f)
+						a.Refresh()
+						onchanged()
+					})),
 					widget.NewFormItem("Cutout Ratio", newRatioSliderButton(float64(a.CutoutRatio), 0, 1, func(f float64) {
 						a.CutoutRatio = float32(f)
 						a.Refresh()
@@ -149,6 +154,11 @@ func initGraphics() {
 					})),
 					widget.NewFormItem("Fill", newColorButton(p.FillColor, func(c color.Color) {
 						p.FillColor = c
+						p.Refresh()
+						onchanged()
+					})),
+					widget.NewFormItem("Corner", newIntSliderButton(float64(p.CornerRadius), 0, 32, func(f float64) {
+						p.CornerRadius = float32(f)
 						p.Refresh()
 						onchanged()
 					})),
