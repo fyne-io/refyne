@@ -7,6 +7,7 @@ import (
 	"github.com/fyne-io/refyne/internal/guidefs"
 )
 
+// Context defines a graphical builder context that contains metadata and theme information.
 type Context = guidefs.Context
 
 type context struct {

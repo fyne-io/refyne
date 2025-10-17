@@ -344,16 +344,15 @@ func initImageGraphic() WidgetInfo {
 				if err != nil {
 					props["minWidth"] = ""
 					return
-				} else {
-					props["minWidth"] = minWidthInput.Text
 				}
+				props["minWidth"] = minWidthInput.Text
+
 				h, err := strconv.ParseFloat(minHeightInput.Text, 32)
 				if err != nil {
 					props["minHeight"] = ""
 					return
-				} else {
-					props["minHeight"] = minHeightInput.Text
 				}
+				props["minHeight"] = minHeightInput.Text
 
 				s := fyne.Size{}
 				if w > 0 || h > 0 {

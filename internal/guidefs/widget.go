@@ -21,6 +21,7 @@ import (
 
 const noIconLabel = "(No Icon)"
 
+// Context defines a graphical builder context that contains metadata and theme information.
 type Context interface {
 	Metadata() map[fyne.CanvasObject]map[string]string
 	Theme() fyne.Theme
