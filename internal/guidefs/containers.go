@@ -217,6 +217,84 @@ func initContainers() {
 				return []string{"container"}
 			},
 		},
+		"*container.Clip": {
+			Name: "Clip",
+			Children: func(o fyne.CanvasObject) []fyne.CanvasObject {
+				c := o.(*container.Clip)
+				return []fyne.CanvasObject{c.Content}
+			},
+			AddChild: func(parent, o fyne.CanvasObject) {
+				c := parent.(*container.Clip)
+				c.Content = o
+				c.Refresh()
+			},
+			Create: func(Context) fyne.CanvasObject {
+				return container.NewClip(container.NewStack())
+			},
+			Edit: func(obj fyne.CanvasObject, c Context, _ func([]*widget.FormItem), _ func()) []*widget.FormItem {
+				return []*widget.FormItem{}
+			},
+			Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
+				props := c.Metadata()
+				clip := obj.(*container.Clip)
+				str := &strings.Builder{}
+
+				str.WriteString("container.NewClip(")
+				writeGoStringExcluding(str, nil, c, defs, clip.Content)
+				str.WriteString(")")
+
+				return widgetRef(props[obj], defs, str.String())
+			},
+			Packages: func(_ fyne.CanvasObject, _ Context) []string {
+				return []string{"container"}
+			},
+		},
+		"*container.Navigation": {
+			Name: "Navigation",
+			Children: func(o fyne.CanvasObject) []fyne.CanvasObject {
+				nav := o.(*container.Navigation)
+				return []fyne.CanvasObject{nav.Root}
+			},
+			AddChild: func(parent, o fyne.CanvasObject) {
+				scr := parent.(*container.Navigation)
+				scr.Root = o
+				scr.Refresh()
+			},
+			Create: func(Context) fyne.CanvasObject {
+				return container.NewNavigation(container.NewStack())
+			},
+			Edit: func(obj fyne.CanvasObject, c Context, _ func([]*widget.FormItem), _ func()) []*widget.FormItem {
+				nav := obj.(*container.Navigation)
+				title := widget.NewEntry()
+				title.SetText(nav.Title)
+				title.OnChanged = func(s string) {
+					nav.SetTitle(s)
+				}
+				return []*widget.FormItem{
+					widget.NewFormItem("Title", title),
+				}
+			},
+			Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
+				props := c.Metadata()
+				n := obj.(*container.Navigation)
+				str := &strings.Builder{}
+
+				if n.Title != "" {
+					str.WriteString("container.NewNavigationWithTitle(")
+					writeGoStringExcluding(str, nil, c, defs, n.Root)
+					str.WriteString(fmt.Sprintf(", \"%s\")", n.Title))
+				} else {
+					str.WriteString("container.NewNavigation(")
+					writeGoStringExcluding(str, nil, c, defs, n.Root)
+					str.WriteString(")")
+				}
+
+				return widgetRef(props[obj], defs, str.String())
+			},
+			Packages: func(_ fyne.CanvasObject, _ Context) []string {
+				return []string{"container"}
+			},
+		},
 		"*container.Scroll": {
 			Name: "Scroll",
 			Children: func(o fyne.CanvasObject) []fyne.CanvasObject {

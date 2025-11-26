@@ -143,6 +143,35 @@ func DecodeMap(m map[string]interface{}, d Context) (fyne.CanvasObject, error) {
 
 		d.Metadata()[obj] = props
 		return obj, nil
+	case "*container.Clip":
+		obj := &container.Clip{}
+		info := m["Struct"].(map[string]interface{})
+		if info["Content"] != nil {
+			child, _ := DecodeMap(info["Content"].(map[string]interface{}), d)
+			obj.Content = child
+		}
+
+		props := map[string]string{}
+		d.Metadata()[obj] = props
+		return obj, nil
+	case "*container.Navigation":
+		obj := &container.Navigation{}
+		info := m["Struct"].(map[string]interface{})
+		if info["Root"] != nil {
+			child, _ := DecodeMap(info["Root"].(map[string]interface{}), d)
+			obj.Root = child
+		}
+		if title, ok := info["Title"]; ok {
+			obj.Title = title.(string)
+		}
+
+		props := map[string]string{}
+		if name, ok := m["Name"]; ok {
+			props["name"] = name.(string)
+		}
+
+		d.Metadata()[obj] = props
+		return obj, nil
 	case "*container.Scroll":
 		obj := &container.Scroll{}
 		info := m["Struct"].(map[string]interface{})
@@ -393,6 +422,23 @@ func EncodeMap(obj fyne.CanvasObject, d Context) (interface{}, error) {
 		}
 		node.Struct["Items"] = items
 		node.Struct["SelectedIndex"] = c.SelectedIndex()
+
+		return &node, nil
+	case *container.Clip:
+		node := &cntObj{Struct: make(map[string]interface{})}
+		node.Type = "*container.Clip"
+		node.Name = name
+
+		node.Struct["Content"], _ = EncodeMap(c.Content, d)
+
+		return &node, nil
+	case *container.Navigation:
+		node := &cntObj{Struct: make(map[string]interface{})}
+		node.Type = "*container.Navigation"
+		node.Struct["Title"] = c.Title
+		node.Name = name
+
+		node.Struct["Root"], _ = EncodeMap(c.Root, d)
 
 		return &node, nil
 	case *container.Scroll:
@@ -655,7 +701,7 @@ func decodeFields(e reflect.Value, in map[string]interface{}, d Context) error {
 			}
 			f.Set(reflect.ValueOf(items))
 		case "fyne.CanvasObject":
-			return errors.New("unsupported object type")
+			return errors.New("unsupported object type in field: " + k)
 		case "*url.URL":
 			u := &url.URL{}
 			decodeFromMap(reflect.ValueOf(v).Interface().(map[string]interface{}), u)
