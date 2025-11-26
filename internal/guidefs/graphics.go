@@ -10,6 +10,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
@@ -220,6 +221,15 @@ func initGraphics() {
 			},
 			Edit: func(obj fyne.CanvasObject, _ Context, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
 				r := obj.(*canvas.Rectangle)
+				aspectData := binding.NewFloat()
+				_ = aspectData.Set(float64(r.Aspect))
+				aspectData.AddListener(binding.NewDataListener(func() {
+					a, _ := aspectData.Get()
+					r.Aspect = float32(a)
+					r.Refresh()
+				}))
+				aspect := widget.NewEntryWithData(binding.FloatToString(aspectData))
+
 				return []*widget.FormItem{
 					widget.NewFormItem("Fill", newColorButton(r.FillColor, func(c color.Color) {
 						r.FillColor = c
@@ -241,6 +251,7 @@ func initGraphics() {
 						r.Refresh()
 						onchanged()
 					})),
+					widget.NewFormItem("Aspect", aspect),
 				}
 			},
 			Packages: func(_ fyne.CanvasObject, _ Context) []string {

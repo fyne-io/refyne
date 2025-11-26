@@ -549,6 +549,13 @@ var (
 				return str.String()
 			},
 		},
+		"RowWrap": {
+			func(_ *fyne.Container, _ Context) fyne.Layout {
+				return layout.NewRowWrapLayout()
+			},
+			nil,
+			nil,
+		},
 		"Stack": {
 			func(c *fyne.Container, d Context) fyne.Layout {
 				return layout.NewStackLayout()
