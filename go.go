@@ -46,12 +46,12 @@ func ExportGoPreview(obj fyne.CanvasObject, d Context, w io.Writer) error {
 
 	code += `
 func main() {
-	myApp := app.New()
-	myWindow := myApp.NewWindow("Hello")
+	a := app.New()
+	w := a.NewWindow("Hello")
 	gui := newGUI()
-	gui.win = myWindow
-	myWindow.SetContent(gui.makeUI())
-	myWindow.ShowAndRun()
+	gui.win = w
+	w.SetContent(gui.makeUI())
+	w.ShowAndRun()
 }
 `
 	_, err := w.Write([]byte(code))
