@@ -25,6 +25,7 @@ const noIconLabel = "(No Icon)"
 type Context interface {
 	Metadata() map[fyne.CanvasObject]map[string]string
 	Theme() fyne.Theme
+	Root() fyne.CanvasObject
 }
 
 var (

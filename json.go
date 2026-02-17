@@ -77,7 +77,10 @@ func DecodeMap(m map[string]interface{}, d Context) (fyne.CanvasObject, error) {
 	switch m["Type"] {
 	case "*fyne.Container":
 		obj := &fyne.Container{}
-		name := m["Layout"].(string)
+		name := "WithoutLayout"
+		if n, ok := m["Layout"]; ok {
+			name = n.(string)
+		}
 
 		props := map[string]string{"layout": name}
 		d.Metadata()[obj] = props
@@ -104,7 +107,12 @@ func DecodeMap(m map[string]interface{}, d Context) (fyne.CanvasObject, error) {
 				}
 			}
 		}
-		obj.Layout = guidefs.Layouts[name].Create(obj, d)
+		layoutType, ok := guidefs.Layouts[name]
+		if !ok {
+			log.Println("Undefined layout,", name)
+			layoutType = guidefs.Layouts["Stack"]
+		}
+		obj.Layout = layoutType.Create(obj, d)
 		if name, ok := m["Name"]; ok {
 			props["name"] = name.(string)
 		}
@@ -478,11 +486,13 @@ func EncodeMap(obj fyne.CanvasObject, d Context) (interface{}, error) {
 	case *fyne.Container:
 		var node cont
 		node.Type = "*fyne.Container"
-		node.Layout = strings.Split(reflect.TypeOf(c.Layout).String(), ".")[1]
-		node.Layout = strings.ToTitle(node.Layout[0:1]) + node.Layout[1:]
+		if c.Layout != nil {
+			node.Layout = strings.Split(reflect.TypeOf(c.Layout).String(), ".")[1]
+			node.Layout = strings.ToTitle(node.Layout[0:1]) + node.Layout[1:]
+		}
 		node.Name = name
 		p := strings.Index(node.Layout, "Layout")
-		if p > 0 {
+		if p > 0 && node.Layout != "WithoutLayout" {
 			node.Layout = node.Layout[:p]
 		}
 		if node.Layout == "Box" {

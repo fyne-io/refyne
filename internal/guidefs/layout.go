@@ -20,6 +20,23 @@ type layoutInfo struct {
 	goText func(*fyne.Container, Context, map[string]string) string
 }
 
+type wrappedLayout struct {
+	layout  func([]fyne.CanvasObject, fyne.Size)
+	minSize func([]fyne.CanvasObject) fyne.Size
+}
+
+func (w wrappedLayout) Layout(objs []fyne.CanvasObject, s fyne.Size) {
+	w.layout(objs, s)
+}
+
+func (w wrappedLayout) MinSize(objs []fyne.CanvasObject) fyne.Size {
+	return w.minSize(objs)
+}
+
+func wrapLayout(l func([]fyne.CanvasObject, fyne.Size), m func([]fyne.CanvasObject) fyne.Size) fyne.Layout {
+	return wrappedLayout{layout: l, minSize: m}
+}
+
 var (
 	// layoutNames is an array with the list of names of all the Layouts
 	layoutNames = extractLayoutNames()
@@ -571,6 +588,53 @@ var (
 			nil,
 			nil,
 		},
+		"WithoutLayout": {
+			func(c *fyne.Container, d Context) fyne.Layout {
+				return &withoutLayout{props: d.Metadata()}
+			},
+			nil,
+			func(c *fyne.Container, d Context, defs map[string]string) string {
+				props := d.Metadata()
+
+				str := &strings.Builder{}
+				str.WriteString(`container.New(wrapLayout(func(objs []fyne.CanvasObject, _ fyne.Size) {
+`)
+
+				for i, o := range c.Objects {
+					xNum := props[o]["x"]
+					if xNum == "" {
+						xNum = "0"
+					}
+					yNum := props[o]["y"]
+					if yNum == "" {
+						yNum = "0"
+					}
+					widthNum := props[o]["width"]
+					if widthNum == "" {
+						widthNum = strconv.FormatFloat(float64(o.MinSize().Width), 'f', -2, 32)
+					}
+					heightNum := props[o]["height"]
+					if heightNum == "" {
+						heightNum = strconv.FormatFloat(float64(o.MinSize().Height), 'f', -2, 32)
+					}
+
+					id := strconv.Itoa(i)
+					str.WriteString("\t\t\tobjs[" + id + "].Resize(fyne.NewSize(" + widthNum + ", " + heightNum + "))\n")
+					str.WriteString("\t\t\tobjs[" + id + "].Move(fyne.NewPos(" + xNum + ", " + yNum + "))\n")
+				}
+
+				str.WriteString(`				}, func(objs []fyne.CanvasObject) fyne.Size {
+					return fyne.Size{}
+				})`)
+
+				str.WriteString(", ")
+				writeGoStringExcluding(str, func(o fyne.CanvasObject) bool {
+					return false
+				}, d, defs, c.Objects...)
+				str.WriteString(")")
+				return str.String()
+			},
+		},
 	}
 )
 
@@ -650,4 +714,34 @@ func writeGoStringExcluding(str *strings.Builder, skip func(object fyne.CanvasOb
 			str.WriteString(", ")
 		}
 	}
+}
+
+type withoutLayout struct {
+	props map[fyne.CanvasObject]map[string]string
+}
+
+func (m withoutLayout) Layout(objs []fyne.CanvasObject, _ fyne.Size) {
+	for i, o := range objs {
+		x, _ := strconv.ParseFloat(m.props[o]["x"], 32)
+		y, _ := strconv.ParseFloat(m.props[o]["y"], 32)
+		w, err := strconv.ParseFloat(m.props[o]["width"], 32)
+		if err != nil {
+			w = float64(o.MinSize().Width)
+		}
+		h, err := strconv.ParseFloat(m.props[o]["height"], 32)
+		if err != nil {
+			h = float64(o.MinSize().Height)
+		}
+
+		objs[i].Resize(fyne.NewSize(float32(w), float32(h)))
+		objs[i].Move(fyne.NewPos(float32(x), float32(y)))
+	}
+}
+
+func (m withoutLayout) MinSize([]fyne.CanvasObject) fyne.Size {
+	return fyne.Size{}
+}
+
+func (m withoutLayout) WithoutLayout() bool {
+	return true
 }

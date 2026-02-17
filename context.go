@@ -12,6 +12,7 @@ type Context = guidefs.Context
 
 type context struct {
 	meta map[fyne.CanvasObject]map[string]string
+	root fyne.CanvasObject
 }
 
 // DefaultContext returns a simple context with an empty metadata map that will
@@ -24,6 +25,46 @@ func (c *context) Metadata() map[fyne.CanvasObject]map[string]string {
 	return c.meta
 }
 
+func (c *context) Root() fyne.CanvasObject {
+	return c.root
+}
+
 func (c *context) Theme() fyne.Theme {
 	return theme.DefaultTheme()
+}
+
+func ContainerOf(obj fyne.CanvasObject, c Context) fyne.CanvasObject {
+	return containerOf(obj, c.Root())
+}
+
+func containerOf(obj fyne.CanvasObject, root fyne.CanvasObject) fyne.CanvasObject {
+	switch c := root.(type) {
+	case *fyne.Container:
+		for _, w := range c.Objects {
+			if w == obj {
+				return root
+			}
+
+			parent := containerOf(obj, w)
+			if parent != nil {
+				return parent
+			}
+		}
+
+	case fyne.Widget:
+		drops := DropZonesForObject(root)
+
+		for _, child := range drops {
+			if child == obj {
+				return root
+			}
+
+			parent := containerOf(obj, child)
+			if parent != nil {
+				return parent
+			}
+		}
+	}
+
+	return nil
 }
