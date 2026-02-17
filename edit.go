@@ -99,18 +99,21 @@ func NameOf(o fyne.CanvasObject) string {
 }
 
 func manualLayoutItems(o fyne.CanvasObject, props map[string]string) []*widget.FormItem {
+	header := widget.NewFormItem("Layout", widget.NewLabel(""))
+	header.HintText = "(manual, static)"
+
 	return []*widget.FormItem{
-		widget.NewFormItem("Layout", widget.NewLabel("(manual, static)")),
-		widget.NewFormItem("> X", float32Entry(o.Position().X, "x", props, func(f float32) {
+		header,
+		widget.NewFormItem("X", float32Entry(o.Position().X, "x", props, func(f float32) {
 			o.Move(fyne.NewPos(f, o.Position().Y))
 		})),
-		widget.NewFormItem("> Y", float32Entry(o.Position().Y, "y", props, func(f float32) {
+		widget.NewFormItem("Y", float32Entry(o.Position().Y, "y", props, func(f float32) {
 			o.Move(fyne.NewPos(o.Position().X, f))
 		})),
-		widget.NewFormItem("> Width", float32Entry(o.Size().Width, "width", props, func(f float32) {
+		widget.NewFormItem("Width", float32Entry(o.Size().Width, "width", props, func(f float32) {
 			o.Resize(fyne.NewSize(f, o.Size().Height))
 		})),
-		widget.NewFormItem("> Height", float32Entry(o.Size().Height, "height", props, func(f float32) {
+		widget.NewFormItem("Height", float32Entry(o.Size().Height, "height", props, func(f float32) {
 			o.Resize(fyne.NewSize(o.Size().Width, f))
 		})),
 	}
