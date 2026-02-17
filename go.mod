@@ -3,7 +3,7 @@ module github.com/fyne-io/refyne
 go 1.19
 
 require (
-	fyne.io/fyne/v2 v2.7.2-0.20251126105512-20570049b21c
+	fyne.io/fyne/v2 v2.7.3-0.20260217112929-f141a6e4a4f6
 	github.com/stretchr/testify v1.11.1
 )
 
@@ -15,7 +15,7 @@ require (
 	github.com/fyne-io/oksvg v0.2.0 // indirect
 	github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71 // indirect
 	github.com/go-text/render v0.2.0 // indirect
-	github.com/go-text/typesetting v0.2.1 // indirect
+	github.com/go-text/typesetting v0.3.3 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/hack-pad/go-indexeddb v0.3.2 // indirect
 	github.com/hack-pad/safejs v0.1.0 // indirect
