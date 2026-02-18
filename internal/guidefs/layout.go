@@ -20,23 +20,6 @@ type layoutInfo struct {
 	goText func(*fyne.Container, Context, map[string]string) string
 }
 
-type wrappedLayout struct {
-	layout  func([]fyne.CanvasObject, fyne.Size)
-	minSize func([]fyne.CanvasObject) fyne.Size
-}
-
-func (w wrappedLayout) Layout(objs []fyne.CanvasObject, s fyne.Size) {
-	w.layout(objs, s)
-}
-
-func (w wrappedLayout) MinSize(objs []fyne.CanvasObject) fyne.Size {
-	return w.minSize(objs)
-}
-
-func wrapLayout(l func([]fyne.CanvasObject, fyne.Size), m func([]fyne.CanvasObject) fyne.Size) fyne.Layout {
-	return wrappedLayout{layout: l, minSize: m}
-}
-
 var (
 	// layoutNames is an array with the list of names of all the Layouts
 	layoutNames = extractLayoutNames()
