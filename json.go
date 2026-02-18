@@ -119,141 +119,17 @@ func DecodeMap(m map[string]interface{}, d Context) (fyne.CanvasObject, error) {
 
 		return obj, nil
 	case "*container.AppTabs":
-		obj := &container.AppTabs{}
-		info := m["Struct"].(map[string]interface{})
-
-		items := info["Items"]
-		if items != nil {
-			for _, c := range items.([]interface{}) {
-				item := &container.TabItem{}
-
-				data := c.(map[string]interface{})
-				item.Text = data["Text"].(string)
-
-				if data["Icon"] != nil {
-					res := guidefs.Icons[data["Icon"].(string)]
-					if res != nil {
-						item.Icon = res
-					}
-				}
-				item.Content, _ = DecodeMap(data["Content"].(map[string]interface{}), d)
-				obj.Append(item)
-			}
-		}
-
-		props := map[string]string{}
-		if name, ok := m["Name"]; ok {
-			props["name"] = name.(string)
-		}
-		if index, ok := info["SelectedIndex"]; ok {
-			obj.SelectIndex(int(index.(float64)))
-		}
-
-		d.Metadata()[obj] = props
-		return obj, nil
+		return decodeAppTabs(m, d)
 	case "*container.Clip":
-		obj := &container.Clip{}
-		info := m["Struct"].(map[string]interface{})
-		if info["Content"] != nil {
-			child, _ := DecodeMap(info["Content"].(map[string]interface{}), d)
-			obj.Content = child
-		}
-
-		props := map[string]string{}
-		d.Metadata()[obj] = props
-		return obj, nil
+		return decodeClip(m, d)
 	case "*container.Navigation":
-		obj := &container.Navigation{}
-		info := m["Struct"].(map[string]interface{})
-		if info["Root"] != nil {
-			child, _ := DecodeMap(info["Root"].(map[string]interface{}), d)
-			obj.Root = child
-		}
-		if title, ok := info["Title"]; ok {
-			obj.Title = title.(string)
-		}
-
-		props := map[string]string{}
-		if name, ok := m["Name"]; ok {
-			props["name"] = name.(string)
-		}
-
-		d.Metadata()[obj] = props
-		return obj, nil
+		return decodeNavigation(m, d)
 	case "*container.Scroll":
-		obj := &container.Scroll{}
-		info := m["Struct"].(map[string]interface{})
-		if off, ok := info["Direction"]; ok {
-			obj.Direction = container.ScrollDirection(off.(float64))
-		}
-		if info["Content"] != nil {
-			child, _ := DecodeMap(info["Content"].(map[string]interface{}), d)
-			obj.Content = child
-		}
-
-		props := map[string]string{}
-		if name, ok := m["Name"]; ok {
-			props["name"] = name.(string)
-		}
-
-		d.Metadata()[obj] = props
-		return obj, nil
+		return decodeScroll(m, d)
 	case "*container.Split":
-		obj := &container.Split{}
-		info := m["Struct"].(map[string]interface{})
-		if info["Horizontal"].(bool) {
-			obj.Horizontal = true
-		}
-		if off, ok := info["Offset"]; ok {
-			obj.Offset = off.(float64)
-		}
-		if info["Leading"] != nil {
-			child, _ := DecodeMap(info["Leading"].(map[string]interface{}), d)
-			obj.Leading = child
-		}
-		if info["Trailing"] != nil {
-			child, _ := DecodeMap(info["Trailing"].(map[string]interface{}), d)
-			obj.Trailing = child
-		}
-
-		props := map[string]string{}
-		if name, ok := m["Name"]; ok {
-			props["name"] = name.(string)
-		}
-
-		d.Metadata()[obj] = props
-		return obj, nil
+		return decodeSplit(m, d)
 	case "*container.ThemeOverride":
-		var content fyne.CanvasObject
-		info := m["Struct"].(map[string]interface{})
-		if info["Content"] != nil {
-			child, _ := DecodeMap(info["Content"].(map[string]interface{}), d)
-			content = child
-		}
-
-		data, ok := info["Theme"]
-		if !ok || data == "" {
-			data = "{}"
-		}
-		fallback := d.Theme()
-		if fallback == nil {
-			fallback = theme.DefaultTheme()
-		}
-		th, err := theme.FromJSONWithFallback(data.(string), fallback)
-		if err != nil {
-			fyne.LogError("Theme decode error", err)
-		}
-		obj := container.NewThemeOverride(content, th)
-
-		props := map[string]string{
-			"data": data.(string),
-		}
-		if name, ok := m["Name"]; ok {
-			props["name"] = name.(string)
-		}
-
-		d.Metadata()[obj] = props
-		return obj, nil
+		return decodeThemeOverride(m, d)
 	}
 
 	obj := decodeWidget(m, d)
@@ -288,6 +164,154 @@ func DecodeMap(m map[string]interface{}, d Context) (fyne.CanvasObject, error) {
 				props[k] = v.(string)
 			}
 		}
+	}
+
+	d.Metadata()[obj] = props
+	return obj, nil
+}
+
+func decodeThemeOverride(m map[string]interface{}, d Context) (fyne.CanvasObject, error) {
+	var content fyne.CanvasObject
+	info := m["Struct"].(map[string]interface{})
+	if info["Content"] != nil {
+		child, _ := DecodeMap(info["Content"].(map[string]interface{}), d)
+		content = child
+	}
+
+	data, ok := info["Theme"]
+	if !ok || data == "" {
+		data = "{}"
+	}
+	fallback := d.Theme()
+	if fallback == nil {
+		fallback = theme.DefaultTheme()
+	}
+	th, err := theme.FromJSONWithFallback(data.(string), fallback)
+	if err != nil {
+		fyne.LogError("Theme decode error", err)
+	}
+	obj := container.NewThemeOverride(content, th)
+
+	props := map[string]string{
+		"data": data.(string),
+	}
+	if name, ok := m["Name"]; ok {
+		props["name"] = name.(string)
+	}
+
+	d.Metadata()[obj] = props
+	return obj, nil
+}
+
+func decodeAppTabs(m map[string]interface{}, d Context) (fyne.CanvasObject, error) {
+	obj := &container.AppTabs{}
+	info := m["Struct"].(map[string]interface{})
+
+	items := info["Items"]
+	if items != nil {
+		for _, c := range items.([]interface{}) {
+			item := &container.TabItem{}
+
+			data := c.(map[string]interface{})
+			item.Text = data["Text"].(string)
+
+			if data["Icon"] != nil {
+				res := guidefs.Icons[data["Icon"].(string)]
+				if res != nil {
+					item.Icon = res
+				}
+			}
+			item.Content, _ = DecodeMap(data["Content"].(map[string]interface{}), d)
+			obj.Append(item)
+		}
+	}
+
+	props := map[string]string{}
+	if name, ok := m["Name"]; ok {
+		props["name"] = name.(string)
+	}
+	if index, ok := info["SelectedIndex"]; ok {
+		obj.SelectIndex(int(index.(float64)))
+	}
+
+	d.Metadata()[obj] = props
+	return obj, nil
+}
+
+func decodeClip(m map[string]interface{}, d Context) (fyne.CanvasObject, error) {
+	obj := &container.Clip{}
+	info := m["Struct"].(map[string]interface{})
+	if info["Content"] != nil {
+		child, _ := DecodeMap(info["Content"].(map[string]interface{}), d)
+		obj.Content = child
+	}
+
+	props := map[string]string{}
+	d.Metadata()[obj] = props
+	return obj, nil
+}
+
+func decodeNavigation(m map[string]interface{}, d Context) (fyne.CanvasObject, error) {
+	obj := &container.Navigation{}
+	info := m["Struct"].(map[string]interface{})
+	if info["Root"] != nil {
+		child, _ := DecodeMap(info["Root"].(map[string]interface{}), d)
+		obj.Root = child
+	}
+	if title, ok := info["Title"]; ok {
+		obj.Title = title.(string)
+	}
+
+	props := map[string]string{}
+	if name, ok := m["Name"]; ok {
+		props["name"] = name.(string)
+	}
+
+	d.Metadata()[obj] = props
+	return obj, nil
+}
+
+func decodeScroll(m map[string]interface{}, d Context) (fyne.CanvasObject, error) {
+	obj := &container.Scroll{}
+	info := m["Struct"].(map[string]interface{})
+	if off, ok := info["Direction"]; ok {
+		obj.Direction = container.ScrollDirection(off.(float64))
+	}
+	if info["Content"] != nil {
+		child, _ := DecodeMap(info["Content"].(map[string]interface{}), d)
+		obj.Content = child
+	}
+
+	props := map[string]string{}
+	if name, ok := m["Name"]; ok {
+		props["name"] = name.(string)
+	}
+
+	d.Metadata()[obj] = props
+	return obj, nil
+}
+
+func decodeSplit(m map[string]interface{}, d Context) (fyne.CanvasObject, error) {
+	obj := &container.Split{}
+	info := m["Struct"].(map[string]interface{})
+	if info["Horizontal"].(bool) {
+		obj.Horizontal = true
+	}
+	if off, ok := info["Offset"]; ok {
+		obj.Offset = off.(float64)
+	}
+	if info["Leading"] != nil {
+		child, _ := DecodeMap(info["Leading"].(map[string]interface{}), d)
+		obj.Leading = child
+	}
+	if info["Trailing"] != nil {
+		child, _ := DecodeMap(info["Trailing"].(map[string]interface{}), d)
+		obj.Trailing = child
+	}
+
+	props := map[string]string{}
+	if name, ok := m["Name"]; ok {
+		props["name"] = name.(string)
 	}
 
 	d.Metadata()[obj] = props
