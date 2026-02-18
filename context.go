@@ -33,6 +33,8 @@ func (c *context) Theme() fyne.Theme {
 	return theme.DefaultTheme()
 }
 
+// ContainerOf returns the parent of the given CanvasObject, in the specified Context.
+// The returned object will be in the tree descended from `c.Root()`, or nil.
 func ContainerOf(obj fyne.CanvasObject, c Context) fyne.CanvasObject {
 	return containerOf(obj, c.Root())
 }
