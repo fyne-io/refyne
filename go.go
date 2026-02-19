@@ -62,7 +62,7 @@ func main() {
 func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d Context, name string) string {
 	for i := 0; i < len(pkgs); i++ {
 		if pkgs[i] == "xWidget" {
-			pkgs[i] = fmt.Sprintf(`xWidget	"fyne.io/x/fyne/widget"`)
+			pkgs[i] = `xWidget	"fyne.io/x/fyne/widget"`
 
 			continue
 		}
