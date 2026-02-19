@@ -1,8 +1,6 @@
 package refyne
 
 import (
-	"reflect"
-
 	"fyne.io/fyne/v2"
 
 	"github.com/fyne-io/refyne/internal/guidefs"
@@ -34,7 +32,7 @@ func WidgetClassList() []string {
 
 // DropZonesForObject returns the children of a container that can be used as drag and drop target zones
 func DropZonesForObject(o fyne.CanvasObject) []fyne.CanvasObject {
-	class := reflect.TypeOf(o).String()
+	class := guidefs.TypeName(o)
 	info := guidefs.Lookup(class)
 
 	if !info.IsContainer() {

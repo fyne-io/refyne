@@ -61,6 +61,12 @@ func main() {
 
 func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d Context, name string) string {
 	for i := 0; i < len(pkgs); i++ {
+		if pkgs[i] == "xWidget" {
+			pkgs[i] = fmt.Sprintf(`xWidget	"fyne.io/x/fyne/widget"`)
+
+			continue
+		}
+
 		if pkgs[i] != "fmt" && pkgs[i] != "net/url" && pkgs[i] != "image/color" {
 			pkgs[i] = "fyne.io/fyne/v2/" + pkgs[i]
 		}
@@ -193,7 +199,7 @@ func packagesRequired(obj fyne.CanvasObject, d Context) []string {
 }
 
 func packagesRequiredForWidget(w fyne.CanvasObject, d Context) []string {
-	name := reflect.TypeOf(w).String()
+	_, name := getTypeOf(w)
 	if pkgs := guidefs.Lookup(name).Packages; pkgs != nil {
 		return pkgs(w, d)
 	}

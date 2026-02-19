@@ -661,7 +661,7 @@ func widgetName(o fyne.CanvasObject) string {
 
 func writeGoString(str *strings.Builder, c Context,
 	defs map[string]string, o fyne.CanvasObject) error {
-	clazz := reflect.TypeOf(o).String()
+	clazz := TypeName(o)
 
 	if match := Lookup(clazz); match != nil {
 		code := GoString(clazz, o, c, defs)

@@ -67,7 +67,7 @@ func EditorFor(o fyne.CanvasObject, d Context, refresh func([]*widget.FormItem),
 func GoStringFor(o fyne.CanvasObject, d Context, defs map[string]string) string {
 	guidefs.InitOnce()
 
-	name := reflect.TypeOf(o).String()
+	name, _ := getTypeOf(o)
 
 	if match := guidefs.Lookup(name); match != nil {
 		return match.Gostring(o, d, defs)
@@ -77,7 +77,7 @@ func GoStringFor(o fyne.CanvasObject, d Context, defs map[string]string) string 
 }
 
 func getTypeOf(o fyne.CanvasObject) (string, string) {
-	class := reflect.TypeOf(o).String()
+	class := guidefs.TypeName(o)
 	name := NameOf(o)
 
 	return name, class

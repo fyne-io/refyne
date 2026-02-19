@@ -129,6 +129,7 @@ func initWidgets() {
 		"*widget.Slider":   initSliderWidget(),
 		"*widget.TextGrid": initTextGridWidget(),
 		"*widget.Toolbar":  initToolbarWidget(),
+		"*xWidget.Map":     initMapXWidget(),
 	}
 
 	Collections = map[string]WidgetInfo{
@@ -1275,24 +1276,6 @@ func InitOnce() {
 		initContainers()
 		initWidgets()
 	})
-}
-
-// Lookup returns the [WidgetInfo] for the given widget type
-func Lookup(clazz string) *WidgetInfo {
-	if match, ok := Widgets[clazz]; ok {
-		return &match
-	}
-	if match, ok := Collections[clazz]; ok {
-		return &match
-	}
-	if match, ok := Containers[clazz]; ok {
-		return &match
-	}
-	if match, ok := Graphics[clazz]; ok {
-		return &match
-	}
-
-	return nil
 }
 
 type widgetNames []string

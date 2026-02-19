@@ -563,7 +563,7 @@ func encodeForm(obj *widget.Form, name string, meta map[string]string) interface
 }
 
 func encodeWidget(obj fyne.CanvasObject, name string, actions map[string]string, meta map[string]string) *canvObj {
-	w := &canvObj{Type: reflect.TypeOf(obj).String(), Name: name, Struct: obj}
+	w := &canvObj{Type: guidefs.TypeName(obj), Name: name, Struct: obj}
 
 	if len(actions) > 0 {
 		w.Actions = actions
