@@ -320,8 +320,7 @@ func initActivityWidget() WidgetInfo {
 			return []*widget.FormItem{}
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
-			return widgetRef(c.Metadata()[obj], defs,
-				fmt.Sprintf("widget.NewActivity()"))
+			return widgetRef(c.Metadata()[obj], defs, "widget.NewActivity()")
 		},
 	}
 }
@@ -943,8 +942,7 @@ func initProgressBarInfiniteWidget() WidgetInfo {
 			return []*widget.FormItem{}
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
-			return widgetRef(c.Metadata()[obj], defs,
-				fmt.Sprintf("widget.NewProgressBarInfinite()"))
+			return widgetRef(c.Metadata()[obj], defs, "widget.NewProgressBarInfinite()")
 		},
 	}
 }
