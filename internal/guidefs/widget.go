@@ -65,6 +65,7 @@ func (w WidgetInfo) IsContainer() bool {
 
 func initWidgets() {
 	Widgets = map[string]WidgetInfo{
+		"*widget.Activity":   initActivityWidget(),
 		"*widget.Button":     initButtonWidget(),
 		"*widget.Hyperlink":  initHyperlinkWidget(),
 		"*widget.Card":       initCardWidget(),
@@ -112,7 +113,8 @@ func initWidgets() {
 			},
 			// The rest inherits from Entry
 		},
-		"*widget.ProgressBar": initProgressBarWidget(),
+		"*widget.ProgressBar":         initProgressBarWidget(),
+		"*widget.ProgressBarInfinite": initProgressBarInfiniteWidget(),
 		"*widget.Separator": {
 			// Separator's height(or width as you may call) and color come from the theme, so not sure if we can change the color and height here
 			Name: "Separator",
@@ -133,6 +135,7 @@ func initWidgets() {
 	}
 
 	Collections = map[string]WidgetInfo{
+
 		"*widget.List": {
 			Name: "List",
 			Create: func(Context) fyne.CanvasObject {
@@ -301,6 +304,24 @@ func initAccordionWidget() WidgetInfo {
 
 			return widgetRef(props, defs,
 				fmt.Sprintf("widget.NewAccordion(%s)", items))
+		},
+	}
+}
+
+func initActivityWidget() WidgetInfo {
+	return WidgetInfo{
+		Name: "Activity Indicator",
+		Create: func(Context) fyne.CanvasObject {
+			a := widget.NewActivity()
+			a.Start()
+			return a
+		},
+		Edit: func(obj fyne.CanvasObject, _ Context, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
+			return []*widget.FormItem{}
+		},
+		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
+			return widgetRef(c.Metadata()[obj], defs,
+				fmt.Sprintf("widget.NewActivity()"))
 		},
 	}
 }
@@ -906,6 +927,24 @@ func initProgressBarWidget() WidgetInfo {
 			p := obj.(*widget.ProgressBar)
 			return widgetRef(c.Metadata()[obj], defs,
 				fmt.Sprintf("&widget.ProgressBar{Value: %f}", p.Value))
+		},
+	}
+}
+
+func initProgressBarInfiniteWidget() WidgetInfo {
+	return WidgetInfo{
+		Name: "Infinite Progress Bar",
+		Create: func(Context) fyne.CanvasObject {
+			p := widget.NewProgressBarInfinite()
+			p.Start()
+			return p
+		},
+		Edit: func(obj fyne.CanvasObject, _ Context, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
+			return []*widget.FormItem{}
+		},
+		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
+			return widgetRef(c.Metadata()[obj], defs,
+				fmt.Sprintf("widget.NewProgressBarInfinite()"))
 		},
 	}
 }
