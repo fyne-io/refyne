@@ -4,6 +4,7 @@ package guidefs
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"reflect"
 	"sort"
@@ -659,6 +660,11 @@ func initFormWidget() WidgetInfo {
 			}
 
 			editItem = func(i int) {
+				if i >= len(formItems) {
+					log.Println("Cannot edit form item out of bounds")
+					return
+				}
+
 				editText := widget.NewEntry()
 				editText.SetText(formItems[i].Text)
 
