@@ -67,7 +67,7 @@ func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d Context, name stri
 			continue
 		}
 
-		if pkgs[i] != "fmt" && pkgs[i] != "net/url" && pkgs[i] != "image/color" {
+		if pkgs[i] != "fmt" && !strings.Contains(pkgs[i], "/") {
 			pkgs[i] = "fyne.io/fyne/v2/" + pkgs[i]
 		}
 
