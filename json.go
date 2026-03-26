@@ -233,6 +233,18 @@ func decodeAppTabs(m map[string]interface{}, d Context) (fyne.CanvasObject, erro
 	if index, ok := info["SelectedIndex"]; ok {
 		obj.SelectIndex(int(index.(float64)))
 	}
+	if loc, ok := info["TabLocation"]; ok {
+		props["location"] = loc.(string)
+
+		switch loc {
+		case "Bottom":
+			obj.SetTabLocation(container.TabLocationBottom)
+		case "Leading":
+			obj.SetTabLocation(container.TabLocationLeading)
+		case "Trailing":
+			obj.SetTabLocation(container.TabLocationTrailing)
+		}
+	}
 
 	d.Metadata()[obj] = props
 	return obj, nil
@@ -454,6 +466,7 @@ func EncodeMap(obj fyne.CanvasObject, d Context) (interface{}, error) {
 		}
 		node.Struct["Items"] = items
 		node.Struct["SelectedIndex"] = c.SelectedIndex()
+		node.Struct["TabLocation"] = props["location"]
 
 		return &node, nil
 	case *container.Clip:

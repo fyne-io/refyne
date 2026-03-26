@@ -111,10 +111,34 @@ func initContainers() {
 			Create: func(Context) fyne.CanvasObject {
 				return container.NewAppTabs(container.NewTabItem("Untitled", container.NewStack()))
 			},
-			Edit: func(obj fyne.CanvasObject, _ Context, setItems func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
+			Edit: func(obj fyne.CanvasObject, c Context, setItems func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
 				tabs := obj.(*container.AppTabs)
-				items := make([]*widget.FormItem, len(tabs.Items)+2)
+				props := c.Metadata()[tabs]
+				items := make([]*widget.FormItem, len(tabs.Items)+3)
 				itemNames := make([]string, len(tabs.Items))
+
+				update := func(s string, tabs *container.AppTabs) {
+					switch s {
+					case "Bottom":
+						tabs.SetTabLocation(container.TabLocationBottom)
+					case "Leading":
+						tabs.SetTabLocation(container.TabLocationLeading)
+					case "Trailing":
+						tabs.SetTabLocation(container.TabLocationTrailing)
+					default:
+						tabs.SetTabLocation(container.TabLocationTop)
+					}
+				}
+				loc := props["location"]
+				update(loc, tabs)
+
+				locations := widget.NewSelect([]string{"Top", "Bottom", "Leading", "Trailing"}, func(s string) {
+					update(s, tabs)
+
+					props["location"] = s
+				})
+				locations.SetSelected(props["location"])
+				items[0] = widget.NewFormItem("Location", locations)
 
 				newRow := func(item *container.TabItem, i int) *widget.FormItem {
 					icon := newIconSelectorButton(item.Icon, func(i fyne.Resource) {
@@ -132,11 +156,11 @@ func initContainers() {
 					del := widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {
 						if i == len(tabs.Items)-1 {
 							tabs.Items = tabs.Items[:i]
-							items = items[:i]
+							items = items[:i+1]
 							itemNames = itemNames[:i]
 						} else {
 							tabs.Items = append(tabs.Items[:i], tabs.Items[i+1:]...)
-							items = append(items[:i], items[i+1:]...)
+							items = append(items[:i+1], items[i+2:]...)
 							itemNames = append(itemNames[:i], itemNames[i+1:]...)
 						}
 						tabs.Refresh()
@@ -149,7 +173,7 @@ func initContainers() {
 					return widget.NewFormItem(fmt.Sprintf("Tab %d", i+1), tools)
 				}
 				for i, c := range tabs.Items {
-					items[i] = newRow(c, i)
+					items[i+1] = newRow(c, i)
 					itemNames[i] = fmt.Sprintf("%s (%d)", c.Text, i+1)
 				}
 
@@ -182,9 +206,17 @@ func initContainers() {
 				return items
 			},
 			Gostring: func(obj fyne.CanvasObject, ctx Context, defs map[string]string) string {
-				props := ctx.Metadata()
+				props := ctx.Metadata()[obj]
 				tabs := obj.(*container.AppTabs)
 				str := &strings.Builder{}
+
+				loc := props["location"]
+				addLoc := loc != "" && loc != "Top"
+
+				if addLoc {
+					str.WriteString("func() *container.AppTabs {\ntabs := ")
+				}
+
 				str.WriteString("container.NewAppTabs(")
 
 				for i, c := range tabs.Items {
@@ -205,7 +237,23 @@ func initContainers() {
 					str.WriteString(")")
 				}
 				str.WriteString(")")
-				return widgetRef(props[obj], defs, str.String())
+
+				if addLoc {
+					locName := "container.TabLocationTop"
+					switch loc {
+					case "Bottom":
+						locName = "container.TabLocationBottom"
+					case "Leading":
+						locName = "container.TabLocationLeading"
+					case "Trailing":
+						locName = "container.TabLocationTrailing"
+					}
+
+					str.WriteString(fmt.Sprintf("\n\ttabs.SetTabLocation(%s)\n", locName))
+					str.WriteString("return tabs\n}()")
+				}
+
+				return widgetRef(props, defs, str.String())
 			},
 			Packages: func(obj fyne.CanvasObject, _ Context) []string {
 				tabs := obj.(*container.AppTabs)
