@@ -684,6 +684,8 @@ func decodeRichTextStyle(m map[string]interface{}) (s widget.RichTextStyle) {
 		switch k {
 		case "TextStyle":
 			s.TextStyle = decodeTextStyle(v.(map[string]interface{}))
+		case "Inline":
+			s.Inline = v.(bool)
 			// TODO more!
 		}
 	}
