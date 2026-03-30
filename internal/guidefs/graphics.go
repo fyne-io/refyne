@@ -1,10 +1,12 @@
 package guidefs
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"image/color"
 	"path/filepath"
+	"reflect"
 	"strconv"
 
 	"fyne.io/fyne/v2"
@@ -219,8 +221,52 @@ func initGraphics() {
 				rect.StrokeColor = color.Black
 				return rect
 			},
-			Edit: func(obj fyne.CanvasObject, _ Context, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
+			Edit: func(obj fyne.CanvasObject, c Context, _ func([]*widget.FormItem), onchanged func()) []*widget.FormItem {
 				r := obj.(*canvas.Rectangle)
+				props := c.Metadata()[obj]
+
+				minWidthInput := widget.NewEntry()
+				minWidthInput.SetText(props["minWidth"])
+				minHeightInput := widget.NewEntry()
+				minHeightInput.SetText(props["minHeight"])
+
+				minWidthInput.Validator = func(s string) error {
+					if s == "" {
+						return nil
+					}
+
+					f, err := strconv.ParseFloat(s, 32)
+					if err != nil {
+						return errors.New("invalid number format")
+					}
+					if f < 0 {
+						return errors.New("negative minimum size")
+					}
+					return nil
+				}
+				minHeightInput.Validator = minWidthInput.Validator
+
+				updateMin := func(_ string) {
+					w, err := strconv.ParseFloat(minWidthInput.Text, 32)
+					if err != nil {
+						props["minWidth"] = ""
+					} else {
+						props["minWidth"] = minWidthInput.Text
+					}
+
+					h, err := strconv.ParseFloat(minHeightInput.Text, 32)
+					if err != nil {
+						props["minHeight"] = ""
+					} else {
+						props["minHeight"] = minHeightInput.Text
+					}
+
+					r.SetMinSize(fyne.NewSize(float32(w), float32(h)))
+					onchanged()
+				}
+				minWidthInput.OnChanged = updateMin
+				minHeightInput.OnChanged = updateMin
+
 				aspectData := binding.NewFloat()
 				_ = aspectData.Set(float64(r.Aspect))
 				aspectData.AddListener(binding.NewDataListener(func() {
@@ -252,7 +298,25 @@ func initGraphics() {
 						onchanged()
 					})),
 					widget.NewFormItem("Aspect", aspect),
+					widget.NewFormItem("Min Width", minWidthInput),
+					widget.NewFormItem("Min Height", minHeightInput),
 				}
+			},
+			Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
+				props := c.Metadata()[obj]
+				minWidth := props["minWidth"]
+				minHeight := props["minHeight"]
+				hasMin := (minWidth != "" && minWidth != "0") || (minHeight != "" && minHeight != "0")
+
+				buf := bytes.Buffer{}
+				fallbackPrint(reflect.ValueOf(obj), &buf)
+				code := buf.String()
+
+				if hasMin {
+					code = fmt.Sprintf("func() *canvas.Rectangle {"+
+						"rect := %s; rect.SetMinSize(%#v); return rect}()", code, obj.MinSize())
+				}
+				return widgetRef(props, defs, code)
 			},
 			Packages: func(_ fyne.CanvasObject, _ Context) []string {
 				return []string{"canvas", "image/color"}
@@ -354,22 +418,18 @@ func initImageGraphic() WidgetInfo {
 				w, err := strconv.ParseFloat(minWidthInput.Text, 32)
 				if err != nil {
 					props["minWidth"] = ""
-					return
+				} else {
+					props["minWidth"] = minWidthInput.Text
 				}
-				props["minWidth"] = minWidthInput.Text
 
 				h, err := strconv.ParseFloat(minHeightInput.Text, 32)
 				if err != nil {
 					props["minHeight"] = ""
-					return
+				} else {
+					props["minHeight"] = minHeightInput.Text
 				}
-				props["minHeight"] = minHeightInput.Text
 
-				s := fyne.Size{}
-				if w > 0 || h > 0 {
-					s = fyne.NewSize(float32(w), float32(h))
-				}
-				i.SetMinSize(s)
+				i.SetMinSize(fyne.NewSize(float32(w), float32(h)))
 				onchanged()
 			}
 			minWidthInput.OnChanged = updateMin
@@ -428,12 +488,12 @@ func initImageGraphic() WidgetInfo {
 			resSelect.SetIcon(i.Resource)
 
 			return []*widget.FormItem{
-				widget.NewFormItem("Min Width", minWidthInput),
-				widget.NewFormItem("Min Height", minHeightInput),
 				widget.NewFormItem("Fill mode", fill),
 				widget.NewFormItem("Corner", cornerRadius),
 				widget.NewFormItem("Path", pathSelect),
 				widget.NewFormItem("Resource", resSelect),
+				widget.NewFormItem("Min Width", minWidthInput),
+				widget.NewFormItem("Min Height", minHeightInput),
 			}
 		},
 		Packages: func(obj fyne.CanvasObject, _ Context) []string {
