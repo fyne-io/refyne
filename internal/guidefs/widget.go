@@ -1031,9 +1031,20 @@ func initRichTextWidget() WidgetInfo {
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
 			props := c.Metadata()[obj]
-			// TODO wrap
-			return widgetRef(props, defs,
-				fmt.Sprintf("widget.NewRichTextFromMarkdown(`%s`)", props["text"]))
+			rich := obj.(*widget.RichText)
+
+			str := &strings.Builder{}
+			wrap := rich.Wrapping != fyne.TextWrapOff
+			if wrap {
+				str.WriteString("func() *widget.RichText {\nrich := ")
+			}
+			str.WriteString(fmt.Sprintf("widget.NewRichTextFromMarkdown(`%s`)", props["text"]))
+
+			if wrap {
+				str.WriteString(fmt.Sprintf("\n\trich.Wrapping = %#v\n", rich.Wrapping))
+				str.WriteString("return rich\n}()")
+			}
+			return widgetRef(props, defs, str.String())
 		},
 	}
 }
