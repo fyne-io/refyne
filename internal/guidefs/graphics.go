@@ -526,6 +526,7 @@ func (c *colorTapper) CreateRenderer() fyne.WidgetRenderer {
 func (c *colorTapper) Tapped(_ *fyne.PointEvent) {
 	d := dialog.NewColorPicker("Choose Color", "Pick a color", c.fn, c.win)
 	d.Advanced = true
+	d.SetColor(c.r.FillColor)
 	d.Show()
 }
 
