@@ -547,7 +547,9 @@ func EncodeMap(obj fyne.CanvasObject, d Context) (interface{}, error) {
 		return &node, nil
 	}
 
-	return &canvObj{Type: reflect.TypeOf(obj).String(), Name: name, Struct: obj}, nil
+	ret := &canvObj{Type: reflect.TypeOf(obj).String(), Name: name, Struct: obj}
+	encodeProperties(props, ret)
+	return ret, nil
 }
 
 func encodeForm(obj *widget.Form, name string, meta map[string]string) interface{} {
@@ -575,12 +577,7 @@ func encodeForm(obj *widget.Form, name string, meta map[string]string) interface
 	return &node
 }
 
-func encodeWidget(obj fyne.CanvasObject, name string, actions map[string]string, meta map[string]string) *canvObj {
-	w := &canvObj{Type: guidefs.TypeName(obj), Name: name, Struct: obj}
-
-	if len(actions) > 0 {
-		w.Actions = actions
-	}
+func encodeProperties(meta map[string]string, w *canvObj) {
 	if len(meta) > 0 {
 		w.Properties = make(map[string]string)
 		for k, v := range meta {
@@ -591,7 +588,15 @@ func encodeWidget(obj fyne.CanvasObject, name string, actions map[string]string,
 			w.Properties[k] = v
 		}
 	}
+}
 
+func encodeWidget(obj fyne.CanvasObject, name string, actions map[string]string, meta map[string]string) *canvObj {
+	w := &canvObj{Type: guidefs.TypeName(obj), Name: name, Struct: obj}
+
+	if len(actions) > 0 {
+		w.Actions = actions
+	}
+	encodeProperties(meta, w)
 	return w
 }
 
