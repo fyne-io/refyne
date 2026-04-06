@@ -401,9 +401,9 @@ func initButtonWidget() WidgetInfo {
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
 			props := c.Metadata()[obj]
 			b := obj.(*widget.Button)
-			action := props["OnTapped"]
-			if action == "" {
-				action = "func() {}"
+			action := "func() {}"
+			if fn := props["OnTapped"]; fn != "" {
+				action = "func() { "+fn+"() }"
 			}
 			if b.Icon == nil {
 				if b.Importance == widget.MediumImportance && b.Alignment == widget.ButtonAlignCenter {
