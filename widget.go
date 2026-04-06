@@ -6,6 +6,7 @@ import (
 	"github.com/fyne-io/refyne/internal/guidefs"
 )
 
+// WidgetInfo contains the name and corresponding functions for the widget type
 type WidgetInfo = guidefs.WidgetInfo
 
 // CollectionClassList returns the list of supported collection widget classes.
