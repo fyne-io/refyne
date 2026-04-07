@@ -888,11 +888,27 @@ func initLabelWidget() WidgetInfo {
 			props := c.Metadata()[obj]
 			l := obj.(*widget.Label)
 			if l.Alignment != fyne.TextAlignLeading || l.Wrapping != fyne.TextWrapOff {
-				style := ""
-				if l.TextStyle.Bold || l.TextStyle.Italic || l.TextStyle.Monospace {
-					style = fmt.Sprintf(", TextStyle: %#v", l.TextStyle)
+				styles := []string{}
+				if l.TextStyle.Bold {
+					styles = append(styles, "Bold")
 				}
-
+				if l.TextStyle.Italic {
+					styles = append(styles, "Italic")
+				}
+				if l.TextStyle.Monospace {
+					styles = append(styles, "Monospace")
+				}
+				style := ""
+				if len(styles) > 0 {
+					style = ", TextStyle: fyne.TextStyle{"
+					for n, s := range styles {
+						if n > 0 {
+							style += ","
+						}
+						style += s + ":true"
+					}
+					style += "}"
+				}
 				return widgetRef(props, defs,
 					fmt.Sprintf("&widget.Label{Text: \"%s\"%s, Alignment: %d, Wrapping: %d}", escapeLabel(l.Text), style, l.Alignment, l.Wrapping))
 			}
