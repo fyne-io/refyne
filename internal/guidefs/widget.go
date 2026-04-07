@@ -547,9 +547,14 @@ func initEntryWidget() WidgetInfo {
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
 			l := obj.(*widget.Entry)
+			props := c.Metadata()[obj]
+			action := "func(_ string) {}"
+			if fn := props["OnChanged"]; fn != "" {
+				action = "func(s string) { " + fn + "(s) }"
+			}
 			return widgetRef(c.Metadata()[obj], defs,
-				fmt.Sprintf("&widget.Entry{Text: \"%s\", PlaceHolder: \"%s\", MultiLine: %t, Password: %t}",
-					escapeLabel(l.Text), escapeLabel(l.PlaceHolder), l.MultiLine, l.Password))
+				fmt.Sprintf("&widget.Entry{Text: \"%s\", PlaceHolder: \"%s\", MultiLine: %t, Password: %t, OnChanged: %s}",
+					escapeLabel(l.Text), escapeLabel(l.PlaceHolder), l.MultiLine, l.Password, action))
 		},
 	}
 }
