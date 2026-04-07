@@ -767,23 +767,17 @@ func decodeFields(e reflect.Value, in map[string]interface{}, d Context) error {
 				strings[i] = a.(string)
 			}
 			f.Set(reflect.ValueOf(strings))
-		case "time.Time":
+		case "time.Time", "*time.Time":
 			s := reflect.ValueOf(v).String()
 
 			t, err := time.Parse(time.RFC3339, s)
-			if err != nil {
+			switch {
+			case err != nil:
 				fyne.LogError("Failed parse time "+s, err)
-			} else {
-				f.Set(reflect.ValueOf(t))
-			}
-		case "*time.Time":
-			s := reflect.ValueOf(v).String()
-
-			t, err := time.Parse(time.RFC3339, s)
-			if err != nil {
-				fyne.LogError("Failed parse time "+s, err)
-			} else {
+			case typeName == "*time.Time":
 				f.Set(reflect.ValueOf(&t))
+			default:
+				f.Set(reflect.ValueOf(t))
 			}
 		case "color.Color":
 			var c color.Color
