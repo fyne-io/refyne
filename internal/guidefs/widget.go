@@ -903,7 +903,7 @@ func initLabelWidget() WidgetInfo {
 					style = ", TextStyle: fyne.TextStyle{"
 					for n, s := range styles {
 						if n > 0 {
-							style += ","
+							style += ", "
 						}
 						style += s + ":true"
 					}
