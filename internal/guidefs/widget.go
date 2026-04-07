@@ -550,6 +550,7 @@ func initEntryWidget() WidgetInfo {
 			props := c.Metadata()[obj]
 			action := "func(_ string) {}"
 			if fn := props["OnChanged"]; fn != "" {
+				// TODO: Use callback directly when initialization order issues are solved
 				action = "func(s string) { " + fn + "(s) }"
 			}
 			return widgetRef(c.Metadata()[obj], defs,
