@@ -402,6 +402,7 @@ func initButtonWidget() WidgetInfo {
 			b := obj.(*widget.Button)
 			action := "func() {}"
 			if fn := props["OnTapped"]; fn != "" {
+				// TODO: Use callback directly when initialization order issues are solved
 				action = "func() { " + fn + "() }"
 			}
 			if b.Icon == nil {
