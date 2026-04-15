@@ -552,13 +552,18 @@ func initEntryWidget() WidgetInfo {
 			l := obj.(*widget.Entry)
 			props := c.Metadata()[obj]
 			action := "func(_ string) {}"
+			submit := action
 			if fn := props["OnChanged"]; fn != "" {
 				// TODO: Use callback directly when initialization order issues are solved
 				action = "func(s string) { " + fn + "(s) }"
 			}
+			if fn := props["OnSubmitted"]; fn != "" {
+				// TODO: Use callback directly when initialization order issues are solved
+				submit = "func(s string) { " + fn + "(s) }"
+			}
 			return widgetRef(c.Metadata()[obj], defs,
-				fmt.Sprintf("&widget.Entry{Text: \"%s\", PlaceHolder: \"%s\", MultiLine: %t, Password: %t, OnChanged: %s}",
-					escapeLabel(l.Text), escapeLabel(l.PlaceHolder), l.MultiLine, l.Password, action))
+				fmt.Sprintf("&widget.Entry{Text: \"%s\", PlaceHolder: \"%s\", MultiLine: %t, Password: %t, OnChanged: %s, OnSubmitted: %s}",
+					escapeLabel(l.Text), escapeLabel(l.PlaceHolder), l.MultiLine, l.Password, action, submit))
 		},
 	}
 }
