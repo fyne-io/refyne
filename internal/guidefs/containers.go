@@ -12,7 +12,6 @@ import (
 )
 
 func initContainers() {
-
 	Containers = map[string]WidgetInfo{
 		"*fyne.Container": {
 			Name: "Container",

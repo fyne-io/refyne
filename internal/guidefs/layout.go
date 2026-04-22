@@ -623,7 +623,7 @@ var (
 
 // extractLayoutNames returns all the list of names of all the Layouts known
 func extractLayoutNames() []string {
-	var layoutsNamesFromData = make([]string, len(Layouts))
+	layoutsNamesFromData := make([]string, len(Layouts))
 	i := 0
 	for k := range Layouts {
 		layoutsNamesFromData[i] = k
@@ -660,7 +660,8 @@ func widgetName(o fyne.CanvasObject) string {
 }
 
 func writeGoString(str *strings.Builder, c Context,
-	defs map[string]string, o fyne.CanvasObject) error {
+	defs map[string]string, o fyne.CanvasObject,
+) error {
 	clazz := TypeName(o)
 
 	if match := Lookup(clazz); match != nil {
@@ -674,7 +675,8 @@ func writeGoString(str *strings.Builder, c Context,
 }
 
 func writeGoStringOrNil(str *strings.Builder, c Context,
-	defs map[string]string, o fyne.CanvasObject) {
+	defs map[string]string, o fyne.CanvasObject,
+) {
 	if o == nil {
 		str.WriteString("nil")
 		return
@@ -684,7 +686,8 @@ func writeGoStringOrNil(str *strings.Builder, c Context,
 }
 
 func writeGoStringExcluding(str *strings.Builder, skip func(object fyne.CanvasObject) bool, c Context,
-	defs map[string]string, objs ...fyne.CanvasObject) {
+	defs map[string]string, objs ...fyne.CanvasObject,
+) {
 	for i, o := range objs {
 		if skip != nil && skip(o) {
 			continue

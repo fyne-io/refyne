@@ -134,7 +134,7 @@ func initIcons() {
 
 // extractIconNames returns all the list of names of all the Icons from the hashmap `Icons`
 func extractIconNames() []string {
-	var iconNamesFromData = make([]string, len(Icons))
+	iconNamesFromData := make([]string, len(Icons))
 	i := 0
 	for k := range Icons {
 		iconNamesFromData[i] = k
@@ -147,7 +147,7 @@ func extractIconNames() []string {
 
 // reverseIconMap returns all the list of Icons and their addresses
 func reverseIconMap() map[string]string {
-	var iconReverseFromData = make(map[string]string, len(Icons))
+	iconReverseFromData := make(map[string]string, len(Icons))
 	for k, v := range Icons {
 		iconReverseFromData[v.Name()] = k
 	}
