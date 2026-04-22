@@ -16,6 +16,9 @@ func GoString(clazz string, obj fyne.CanvasObject, c Context, defs map[string]st
 	}
 
 	if fn := info.Gostring; fn != nil {
+		if c.Attrs()[obj] == nil {
+			c.Attrs()[obj] = make(map[string]string)
+		}
 		return fn(obj, c, defs)
 	}
 

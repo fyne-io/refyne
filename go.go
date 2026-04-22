@@ -60,6 +60,17 @@ func main() {
 	return err
 }
 
+func getSortedKeys[T any](m map[string]T) []string {
+	r := make([]string, len(m))
+	i := 0
+	for k := range m {
+		r[i] = k
+		i++
+	}
+	sort.Strings(r)
+	return r
+}
+
 func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d Context, name string) string {
 	for i := 0; i < len(pkgs); i++ {
 		if pkgs[i] == "xWidget" {
@@ -81,17 +92,25 @@ func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d Context, name stri
 	main := guidefs.GoString(clazz, obj, d, defs)
 	setup := ""
 
-	keys := make([]string, len(defs))
-	i := 0
-	for k := range defs {
-		keys[i] = k
-		i++
-	}
-	sort.Strings(keys)
-
 	for _, key := range vars {
 		name := strings.Split(key, " ")[0]
 		setup += "g." + name + " = " + defs[name] + "\n"
+	}
+
+	attrs := []string{}
+	for obj, props := range d.Metadata() {
+		if props["name"] == "" {
+			continue
+		}
+
+		attr, found := d.Attrs()[obj]
+		if !found {
+			continue
+		}
+
+		for _, k := range getSortedKeys(attr) {
+			attrs = append(attrs, "g."+props["name"]+"."+k+attr[k])
+		}
 	}
 
 	guiName := "gui"
@@ -125,6 +144,7 @@ func wrapLayout(l func([]fyne.CanvasObject, fyne.Size), m func([]fyne.CanvasObje
 		GuiName      string
 		GuiNameUpper string
 		Vars         []string
+		Attrs        []string
 		Setup        string
 		Main         string
 	}{
@@ -133,6 +153,7 @@ func wrapLayout(l func([]fyne.CanvasObject, fyne.Size), m func([]fyne.CanvasObje
 		GuiName:      guiName,
 		GuiNameUpper: guiNameUpper,
 		Vars:         vars,
+		Attrs:        attrs,
 		Setup:        setup,
 		Main:         main,
 	}
@@ -164,6 +185,10 @@ func new{{.GuiNameUpper}}GUI() *{{.GuiName}} {
 
 func (g *{{.GuiName}}) makeUI() fyne.CanvasObject {
 	{{.Setup}}
+
+	{{- range .Attrs}}
+		{{.}}
+	{{- end}}
 
 	return {{.Main}}
 }`, data)

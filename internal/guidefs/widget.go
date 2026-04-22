@@ -25,6 +25,7 @@ const noIconLabel = "(No Icon)"
 // Context defines a graphical builder context that contains metadata and theme information.
 type Context interface {
 	Metadata() map[fyne.CanvasObject]map[string]string
+	Attrs() map[fyne.CanvasObject]map[string]string
 	Theme() fyne.Theme
 	Root() fyne.CanvasObject
 }
@@ -399,28 +400,26 @@ func initButtonWidget() WidgetInfo {
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
 			props := c.Metadata()[obj]
+			attrs := c.Attrs()[obj]
 			b := obj.(*widget.Button)
-			action := "func() {}"
+
 			if fn := props["OnTapped"]; fn != "" {
-				// TODO: Use callback directly when initialization order issues are solved
-				action = "func() { " + fn + "() }"
-			}
-			if b.Icon == nil {
-				if b.Importance == widget.MediumImportance && b.Alignment == widget.ButtonAlignCenter {
-					return widgetRef(props, defs, fmt.Sprintf("widget.NewButton(\"%s\", %s)", escapeLabel(b.Text), action))
-				}
-
-				return widgetRef(props, defs, fmt.Sprintf("&widget.Button{Text: \"%s\", Importance: %d, Alignment: %d, OnTapped: %s}",
-					escapeLabel(b.Text), b.Importance, b.Alignment, action))
+				attrs["OnTapped"] = " = " + fn
 			}
 
-			icon := "theme." + IconName(b.Icon) + "()"
-			if b.Importance == widget.MediumImportance && b.Alignment == widget.ButtonAlignCenter {
-				return widgetRef(props, defs, fmt.Sprintf("widget.NewButtonWithIcon(\"%s\", %s, %s)", escapeLabel(b.Text), icon, action))
+			if b.Icon != nil {
+				attrs["Icon"] = " = theme." + IconName(b.Icon) + "()"
 			}
 
-			return widgetRef(props, defs, fmt.Sprintf("&widget.Button{Text: \"%s\", Importance: %d, Icon: %s, Alignment: %d, OnTapped: %s}",
-				escapeLabel(b.Text), b.Importance, icon, b.Alignment, action))
+			if b.Importance != widget.MediumImportance {
+				attrs["Importance"] = fmt.Sprintf(" = %d", b.Importance)
+			}
+
+			if b.Alignment != widget.ButtonAlignCenter {
+				attrs["Alignment"] = fmt.Sprint(" = %d", b.Alignment)
+			}
+
+			return widgetRef(props, defs, fmt.Sprintf("widget.NewButton(%q, nil)", b.Text))
 		},
 		Packages: func(obj fyne.CanvasObject, _ Context) []string {
 			b := obj.(*widget.Button)
@@ -551,19 +550,33 @@ func initEntryWidget() WidgetInfo {
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
 			l := obj.(*widget.Entry)
 			props := c.Metadata()[obj]
-			action := "func(_ string) {}"
-			submit := action
+			attrs := c.Metadata()[obj]
+
 			if fn := props["OnChanged"]; fn != "" {
-				// TODO: Use callback directly when initialization order issues are solved
-				action = "func(s string) { " + fn + "(s) }"
+				attrs["OnChanged"] = " = " + fn
 			}
+
 			if fn := props["OnSubmitted"]; fn != "" {
-				// TODO: Use callback directly when initialization order issues are solved
-				submit = "func(s string) { " + fn + "(s) }"
+				attrs["OnSubmitted"] = " = " + fn
 			}
-			return widgetRef(c.Metadata()[obj], defs,
-				fmt.Sprintf("&widget.Entry{Text: \"%s\", PlaceHolder: \"%s\", MultiLine: %t, Password: %t, OnChanged: %s, OnSubmitted: %s}",
-					escapeLabel(l.Text), escapeLabel(l.PlaceHolder), l.MultiLine, l.Password, action, submit))
+
+			if l.Text != "" {
+				attrs["Text"] = fmt.Sprintf(" = %q", l.Text)
+			}
+
+			if l.PlaceHolder != "" {
+				attrs["PlaceHolder"] = fmt.Sprintf(" = %q", l.PlaceHolder)
+			}
+
+			if l.MultiLine {
+				attrs["MultiLine"] = " = true"
+			}
+
+			if l.Password {
+				attrs["Password"] = " = true"
+			}
+
+			return widgetRef(props, defs, fmt.Sprintf("widget.NewEntry()"))
 		},
 	}
 }
@@ -1067,20 +1080,14 @@ func initRichTextWidget() WidgetInfo {
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
 			props := c.Metadata()[obj]
+			attrs := c.Attrs()[obj]
 			rich := obj.(*widget.RichText)
 
-			str := &strings.Builder{}
-			wrap := rich.Wrapping != fyne.TextWrapOff
-			if wrap {
-				str.WriteString("func() *widget.RichText {\nrich := ")
+			if rich.Wrapping != fyne.TextWrapOff {
+				attrs["Wrapping"] = fmt.Sprintf(" = %#v", rich.Wrapping)
 			}
-			str.WriteString(fmt.Sprintf("widget.NewRichTextFromMarkdown(`%s`)", props["text"]))
 
-			if wrap {
-				str.WriteString(fmt.Sprintf("\n\trich.Wrapping = %#v\n", rich.Wrapping))
-				str.WriteString("return rich\n}()")
-			}
-			return widgetRef(props, defs, str.String())
+			return widgetRef(props, defs, fmt.Sprintf("widget.NewRichTextFromMarkdown(%q)", props["text"]))
 		},
 	}
 }
