@@ -69,7 +69,8 @@ func initMapXWidget() WidgetInfo {
 			return []*widget.FormItem{
 				widget.NewFormItem("Latitude", lat),
 				widget.NewFormItem("Longitude", lon),
-				widget.NewFormItem("Zoom", zoom)}
+				widget.NewFormItem("Zoom", zoom),
+			}
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
 			props := c.Metadata()[obj]

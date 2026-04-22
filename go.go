@@ -119,7 +119,7 @@ func wrapLayout(l func([]fyne.CanvasObject, fyne.Size), m func([]fyne.CanvasObje
 }`
 	}
 
-	data := struct{
+	data := struct {
 		Pkgs         []string
 		LayoutHelper string
 		GuiName      string
