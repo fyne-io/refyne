@@ -12,7 +12,7 @@ type Context = guidefs.Context
 
 type context struct {
 	meta map[fyne.CanvasObject]map[string]string
-	attr map[fyne.CanvasObject]map[string]string
+	attr map[fyne.CanvasObject][]string
 	root fyne.CanvasObject
 }
 
@@ -21,7 +21,7 @@ type context struct {
 func DefaultContext() Context {
 	return &context{
 		meta: make(map[fyne.CanvasObject]map[string]string),
-		attr: make(map[fyne.CanvasObject]map[string]string),
+		attr: make(map[fyne.CanvasObject][]string),
 	}
 }
 
@@ -29,7 +29,7 @@ func (c *context) Metadata() map[fyne.CanvasObject]map[string]string {
 	return c.meta
 }
 
-func (c *context) Attrs() map[fyne.CanvasObject]map[string]string {
+func (c *context) Attrs() map[fyne.CanvasObject][]string {
 	return c.attr
 }
 

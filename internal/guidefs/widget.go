@@ -25,7 +25,7 @@ const noIconLabel = "(No Icon)"
 // Context defines a graphical builder context that contains metadata and theme information.
 type Context interface {
 	Metadata() map[fyne.CanvasObject]map[string]string
-	Attrs() map[fyne.CanvasObject]map[string]string
+	Attrs() map[fyne.CanvasObject][]string
 	Theme() fyne.Theme
 	Root() fyne.CanvasObject
 }
@@ -400,24 +400,22 @@ func initButtonWidget() WidgetInfo {
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
 			props := c.Metadata()[obj]
-			attrs := c.Attrs()[obj]
 			b := obj.(*widget.Button)
 
+			attrs := c.Attrs()[obj]
 			if fn := props["OnTapped"]; fn != "" {
-				attrs["OnTapped"] = " = " + fn
+				attrs = append(attrs, "OnTapped = "+fn)
 			}
-
 			if b.Icon != nil {
-				attrs["Icon"] = " = theme." + IconName(b.Icon) + "()"
+				attrs = append(attrs, "Icon = theme."+IconName(b.Icon)+"()")
 			}
-
 			if b.Importance != widget.MediumImportance {
-				attrs["Importance"] = fmt.Sprintf(" = %d", b.Importance)
+				attrs = append(attrs, fmt.Sprintf("Importance = %d", b.Importance))
 			}
-
 			if b.Alignment != widget.ButtonAlignCenter {
-				attrs["Alignment"] = fmt.Sprint(" = %d", b.Alignment)
+				attrs = append(attrs, fmt.Sprintf("Alignment = %d", b.Alignment))
 			}
+			c.Attrs()[obj] = attrs
 
 			return widgetRef(props, defs, fmt.Sprintf("widget.NewButton(%q, nil)", b.Text))
 		},
@@ -550,31 +548,26 @@ func initEntryWidget() WidgetInfo {
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
 			l := obj.(*widget.Entry)
 			props := c.Metadata()[obj]
-			attrs := c.Metadata()[obj]
 
-			if fn := props["OnChanged"]; fn != "" {
-				attrs["OnChanged"] = " = " + fn
+			attrs := c.Attrs()[obj]
+			for _, on := range []string{"OnChanged", "OnSubmitted"} {
+				if props[on] != "" {
+					attrs = append(attrs, on+" = "+props[on])
+				}
 			}
-
-			if fn := props["OnSubmitted"]; fn != "" {
-				attrs["OnSubmitted"] = " = " + fn
-			}
-
 			if l.Text != "" {
-				attrs["Text"] = fmt.Sprintf(" = %q", l.Text)
+				attrs = append(attrs, fmt.Sprintf("Text = %q", l.Text))
 			}
-
 			if l.PlaceHolder != "" {
-				attrs["PlaceHolder"] = fmt.Sprintf(" = %q", l.PlaceHolder)
+				attrs = append(attrs, fmt.Sprintf("PlaceHolder = %q", l.PlaceHolder))
 			}
-
 			if l.MultiLine {
-				attrs["MultiLine"] = " = true"
+				attrs = append(attrs, "MultiLine = true")
 			}
-
 			if l.Password {
-				attrs["Password"] = " = true"
+				attrs = append(attrs, "Password = true")
 			}
+			c.Attrs()[obj] = attrs
 
 			return widgetRef(props, defs, fmt.Sprintf("widget.NewEntry()"))
 		},
@@ -1080,12 +1073,13 @@ func initRichTextWidget() WidgetInfo {
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
 			props := c.Metadata()[obj]
-			attrs := c.Attrs()[obj]
 			rich := obj.(*widget.RichText)
 
+			attrs := c.Attrs()[obj]
 			if rich.Wrapping != fyne.TextWrapOff {
-				attrs["Wrapping"] = fmt.Sprintf(" = %#v", rich.Wrapping)
+				attrs = append(attrs, fmt.Sprintf("Wrapping = %#v", rich.Wrapping))
 			}
+			c.Attrs()[obj] = attrs
 
 			return widgetRef(props, defs, fmt.Sprintf("widget.NewRichTextFromMarkdown(%q)", props["text"]))
 		},

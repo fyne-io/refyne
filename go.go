@@ -60,17 +60,6 @@ func main() {
 	return err
 }
 
-func getSortedKeys[T any](m map[string]T) []string {
-	r := make([]string, len(m))
-	i := 0
-	for k := range m {
-		r[i] = k
-		i++
-	}
-	sort.Strings(r)
-	return r
-}
-
 func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d Context, name string) string {
 	for i := 0; i < len(pkgs); i++ {
 		if pkgs[i] == "xWidget" {
@@ -103,13 +92,8 @@ func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d Context, name stri
 			continue
 		}
 
-		attr, found := d.Attrs()[obj]
-		if !found {
-			continue
-		}
-
-		for _, k := range getSortedKeys(attr) {
-			attrs = append(attrs, "g."+props["name"]+"."+k+attr[k])
+		for _, attr := range d.Attrs()[obj] {
+			attrs = append(attrs, "g."+props["name"]+"."+attr)
 		}
 	}
 
