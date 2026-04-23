@@ -569,7 +569,7 @@ func initEntryWidget() WidgetInfo {
 			}
 			c.Attrs()[obj] = attrs
 
-			return widgetRef(props, defs, fmt.Sprintf("widget.NewEntry()"))
+			return widgetRef(props, defs, "widget.NewEntry()")
 		},
 	}
 }
