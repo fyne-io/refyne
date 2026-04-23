@@ -12,17 +12,25 @@ type Context = guidefs.Context
 
 type context struct {
 	meta map[fyne.CanvasObject]map[string]string
+	attr map[fyne.CanvasObject][]string
 	root fyne.CanvasObject
 }
 
 // DefaultContext returns a simple context with an empty metadata map that will
 // defer to the default theme for theming information.
 func DefaultContext() Context {
-	return &context{meta: make(map[fyne.CanvasObject]map[string]string)}
+	return &context{
+		meta: make(map[fyne.CanvasObject]map[string]string),
+		attr: make(map[fyne.CanvasObject][]string),
+	}
 }
 
 func (c *context) Metadata() map[fyne.CanvasObject]map[string]string {
 	return c.meta
+}
+
+func (c *context) Attrs() map[fyne.CanvasObject][]string {
+	return c.attr
 }
 
 func (c *context) Root() fyne.CanvasObject {
