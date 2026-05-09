@@ -114,7 +114,7 @@ func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d Context, name stri
 	for obj, props := range d.Metadata() {
 		name := props["name"]
 		if name == "" {
-			name = fmt.Sprintf("%p", obj)[1:]
+			name = tools.VarNames.Get(obj)
 			props["name-is-generated"] = "1"
 		}
 		deps[name] = countContainers(obj)

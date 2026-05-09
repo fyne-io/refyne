@@ -2,7 +2,6 @@ package refyne
 
 import (
 	"bytes"
-	"fmt"
 	"sort"
 	"testing"
 
@@ -187,7 +186,7 @@ func TestExportGoWithoutId(t *testing.T) {
 	ctx.Metadata()[ntr] = make(map[string]string)
 	ctx.Metadata()[ntr]["OnSubmitted"] = "g.coco.Hide"
 
-	id := fmt.Sprintf("%p", ntr)[1:]
+	id := tools.VarNames.Get(ntr)
 
 	obj := container.NewVBox(ntr)
 	ctx.Metadata()[obj] = make(map[string]string)
@@ -239,23 +238,23 @@ func TestExportGoWithoutIds(t *testing.T) {
 	ntr := widget.NewEntry()
 	ctx.Metadata()[ntr] = make(map[string]string)
 	ctx.Metadata()[ntr]["OnSubmitted"] = "g.coco.Hide"
-	ntrid := fmt.Sprintf("%p", ntr)[1:]
+	ntrid := tools.VarNames.Get(ntr)
 
 	btn := widget.NewButton("Foo", nil)
 	ctx.Metadata()[btn] = make(map[string]string)
 	ctx.Metadata()[btn]["OnTapped"] = ntrid + ".Hide"
-	btnid := fmt.Sprintf("%p", btn)[1:]
+	btnid := tools.VarNames.Get(btn)
 
 	box := container.NewHBox(
 		ntr,
 		btn,
 	)
 	ctx.Metadata()[box] = make(map[string]string)
-	boxid := fmt.Sprintf("%p", box)[1:]
+	boxid := tools.VarNames.Get(box)
 
 	lbl := widget.NewLabel("Meep")
 	ctx.Metadata()[lbl] = make(map[string]string)
-	lblid := fmt.Sprintf("%p", lbl)[1:]
+	lblid := tools.VarNames.Get(lbl)
 
 	con := container.NewVBox(
 		lbl,
