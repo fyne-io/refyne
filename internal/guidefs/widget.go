@@ -161,8 +161,12 @@ func initWidgets() {
 				item.(*widget.Label).SetText(fmt.Sprintf("Item %d", id+1))
 			})`)
 			},
-			Packages: func(obj fyne.CanvasObject, _ Context) []string {
-				return []string{"widget", "fmt"}
+			Packages: func(obj fyne.CanvasObject, c Context) []string {
+				pkgs := []string{"widget", "fmt"}
+				if c.Metadata()[obj]["Data"] != "" {
+					return append(pkgs, "fyne.io/fyne/v2/data/binding")
+				}
+				return pkgs
 			},
 		},
 		"*widget.Table": {
