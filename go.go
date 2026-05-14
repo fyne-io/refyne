@@ -18,6 +18,8 @@ import (
 func ExportGo(obj fyne.CanvasObject, d Context, name string, w io.Writer) error {
 	guidefs.InitOnce()
 
+	tools.VarNames.Reset()
+
 	packagesList := packagesRequired(obj, d)
 
 	// Really this needs to be a full dependency analysis but for now a simple sort of widgets before containers may work
