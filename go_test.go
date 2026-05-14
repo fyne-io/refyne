@@ -238,23 +238,23 @@ func TestExportGoWithoutIds(t *testing.T) {
 	ntr := widget.NewEntry()
 	ctx.Metadata()[ntr] = make(map[string]string)
 	ctx.Metadata()[ntr]["OnSubmitted"] = "g.coco.Hide"
-	ntrid := tools.VarNames.Get(ntr)
+	ntrid := "Entry1"
 
 	btn := widget.NewButton("Foo", nil)
 	ctx.Metadata()[btn] = make(map[string]string)
 	ctx.Metadata()[btn]["OnTapped"] = ntrid + ".Hide"
-	btnid := tools.VarNames.Get(btn)
+	btnid := "Button1"
 
 	box := container.NewHBox(
 		ntr,
 		btn,
 	)
 	ctx.Metadata()[box] = make(map[string]string)
-	boxid := tools.VarNames.Get(box)
+	boxid := "Container1"
 
 	lbl := widget.NewLabel("Meep")
 	ctx.Metadata()[lbl] = make(map[string]string)
-	lblid := tools.VarNames.Get(lbl)
+	lblid := "Label1"
 
 	con := container.NewVBox(
 		lbl,
