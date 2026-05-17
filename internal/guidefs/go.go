@@ -21,7 +21,7 @@ func GoString(clazz string, obj fyne.CanvasObject, c Context, defs map[string]st
 
 	buf := bytes.Buffer{}
 	fallbackPrint(reflect.ValueOf(obj), &buf)
-	return widgetRef(c.Metadata()[obj], defs, buf.String())
+	return widgetRef(obj, c, defs, buf.String())
 }
 
 // fallbackPrint is derived from printValue in the BSD licensed Go source code at: src/fmt/print.go.

@@ -250,11 +250,8 @@ func TestExportGoWithoutIds(t *testing.T) {
 		btn,
 	)
 	ctx.Metadata()[box] = make(map[string]string)
-	boxid := "container1"
 
 	lbl := widget.NewLabel("Meep")
-	ctx.Metadata()[lbl] = make(map[string]string)
-	lblid := "label1"
 
 	con := container.NewVBox(
 		lbl,
@@ -267,13 +264,6 @@ func TestExportGoWithoutIds(t *testing.T) {
 	buf := &bytes.Buffer{}
 	assert.NoError(t, ExportGo(con, ctx, name, buf))
 
-	lines := []string{
-		btnid + ` := widget.NewButton("Foo", nil)`,
-		lblid + ` := widget.NewLabel("Meep")`,
-		ntrid + ` := widget.NewEntry()`,
-	}
-	sort.Strings(lines)
-
 	attrLines := []string{
 		ntrid + `.OnSubmitted = g.coco.Hide`,
 		btnid + `.OnTapped = ` + ntrid + `.Hide`,
@@ -281,12 +271,10 @@ func TestExportGoWithoutIds(t *testing.T) {
 	sort.Strings(attrLines)
 
 	data := struct {
-		BtnID, NtrID, LblID, BoxID string
-		Lines                      []string
-		AttrLines                  []string
+		BtnID, NtrID string
+		AttrLines    []string
 	}{
-		btnid, ntrid, lblid, boxid,
-		lines,
+		btnid, ntrid,
 		attrLines,
 	}
 
@@ -312,15 +300,13 @@ func newWhatGUI() *whatGui {
 }
 
 func (g *whatGui) makeUI() fyne.CanvasObject {
-	{{ range .Lines -}}
-	{{.}}
-	{{ end -}}
-	{{.BoxID}} := container.NewVBox(
-		{{.NtrID}},
-		{{.BtnID}})
+	button1 := widget.NewButton("Foo", nil)
+	entry1 := widget.NewEntry()
 	g.coco = container.NewVBox(
-		{{.LblID}},
-		{{.BoxID}})
+		widget.NewLabel("Meep"),
+		container.NewVBox(
+			entry1,
+			{{.BtnID}}))
 {{ range .AttrLines }}
 	{{ . }}
 	{{- end }}

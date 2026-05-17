@@ -78,7 +78,7 @@ func initMapXWidget() WidgetInfo {
 			lat, _ := strconv.ParseFloat(props["lat"], 64)
 			lon, _ := strconv.ParseFloat(props["lon"], 64)
 			zoom, _ := strconv.Atoi(props["zoom"])
-			return widgetRef(c.Metadata()[obj], defs,
+			return widgetRef(obj, c, defs,
 				fmt.Sprintf("xWidget.NewMapWithOptions(xWidget.AtLatLon(%f, %f), xWidget.AtZoomLevel(%d))", lat, lon, zoom))
 		},
 		Packages: func(obj fyne.CanvasObject, _ Context) []string {

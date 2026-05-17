@@ -318,7 +318,7 @@ func initGraphics() {
 					code = fmt.Sprintf("func() *canvas.Rectangle {"+
 						"rect := %s; rect.SetMinSize(%#v); return rect}()", code, obj.MinSize())
 				}
-				return widgetRef(props, defs, code)
+				return widgetRef(obj, c, defs, code)
 			},
 			Packages: func(_ fyne.CanvasObject, _ Context) []string {
 				return []string{"canvas", "image/color"}
@@ -543,7 +543,7 @@ func initImageGraphic() WidgetInfo {
 				}
 			}
 
-			return widgetRef(props, defs, code)
+			return widgetRef(obj, c, defs, code)
 		},
 	}
 }

@@ -18,6 +18,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/fyne-io/refyne/internal/tools"
 )
 
 const noIconLabel = "(No Icon)"
@@ -87,7 +88,7 @@ func initWidgets() {
 				return []*widget.FormItem{}
 			},
 			Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
-				return widgetRef(c.Metadata()[obj], defs, "layout.NewSpacer()")
+				return widgetRef(obj, c, defs, "layout.NewSpacer()")
 			},
 			Packages: func(_ fyne.CanvasObject, _ Context) []string {
 				return []string{"layout"}
@@ -127,7 +128,7 @@ func initWidgets() {
 				return []*widget.FormItem{}
 			},
 			Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
-				return widgetRef(c.Metadata()[obj], defs, "widget.NewSeparator()")
+				return widgetRef(obj, c, defs, "widget.NewSeparator()")
 			},
 		},
 		"*widget.Slider":   initSliderWidget(),
@@ -152,7 +153,7 @@ func initWidgets() {
 				return []*widget.FormItem{}
 			},
 			Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
-				return widgetRef(c.Metadata()[obj], defs,
+				return widgetRef(obj, c, defs,
 					`widget.NewList(func() int {
 				return 5
 			}, func() fyne.CanvasObject {
@@ -185,7 +186,7 @@ func initWidgets() {
 				return []*widget.FormItem{}
 			},
 			Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
-				return widgetRef(c.Metadata()[obj], defs,
+				return widgetRef(obj, c, defs,
 					`widget.NewTable(func() (int, int) {
 				return 3, 3
 			}, func() fyne.CanvasObject {
@@ -245,7 +246,7 @@ func initWidgets() {
 				return []*widget.FormItem{}
 			},
 			Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
-				return widgetRef(c.Metadata()[obj], defs,
+				return widgetRef(obj, c, defs,
 					`widget.NewTreeWithStrings(
 map[string][]string{
 	"":  {"A"},
@@ -299,15 +300,14 @@ func initAccordionWidget() WidgetInfo {
 			return []*widget.FormItem{widget.NewFormItem("Multiple Open", multi)}
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
-			props := c.Metadata()[obj]
 			items := "widget.NewAccordionItem(\"Item 1\", widget.NewLabel(\"The content goes here\")), widget.NewAccordionItem(\"Item 2\", widget.NewLabel(\"Content part 2 goes here\"))"
 			acc := obj.(*widget.Accordion)
 			if acc.MultiOpen {
-				return widgetRef(props, defs,
+				return widgetRef(obj, c, defs,
 					fmt.Sprintf("&widget.Accordion{Items: []*widget.AccordionItem{%s}, MultiOpen: true}", items))
 			}
 
-			return widgetRef(props, defs,
+			return widgetRef(obj, c, defs,
 				fmt.Sprintf("widget.NewAccordion(%s)", items))
 		},
 	}
@@ -325,7 +325,7 @@ func initActivityWidget() WidgetInfo {
 			return []*widget.FormItem{}
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
-			return widgetRef(c.Metadata()[obj], defs, "widget.NewActivity()")
+			return widgetRef(obj, c, defs, "widget.NewActivity()")
 		},
 	}
 }
@@ -421,7 +421,7 @@ func initButtonWidget() WidgetInfo {
 			}
 			c.Attrs()[obj] = attrs
 
-			return widgetRef(props, defs, fmt.Sprintf("widget.NewButton(%q, nil)", b.Text))
+			return widgetRef(obj, c, defs, fmt.Sprintf("widget.NewButton(%q, nil)", b.Text))
 		},
 		Packages: func(obj fyne.CanvasObject, _ Context) []string {
 			b := obj.(*widget.Button)
@@ -461,7 +461,7 @@ func initCardWidget() WidgetInfo {
 		},
 		Gostring: func(obj fyne.CanvasObject, ctx Context, defs map[string]string) string {
 			c := obj.(*widget.Card)
-			return widgetRef(ctx.Metadata()[obj], defs, fmt.Sprintf("widget.NewCard(\"%s\", \"%s\", widget.NewLabel(\"Content here\"))",
+			return widgetRef(obj, ctx, defs, fmt.Sprintf("widget.NewCard(\"%s\", \"%s\", widget.NewLabel(\"Content here\"))",
 				escapeLabel(c.Title), escapeLabel(c.Subtitle)))
 		},
 	}
@@ -497,7 +497,7 @@ func initCheckWidget() WidgetInfo {
 		},
 		Gostring: func(obj fyne.CanvasObject, ctx Context, defs map[string]string) string {
 			c := obj.(*widget.Check)
-			return widgetRef(ctx.Metadata()[obj], defs,
+			return widgetRef(obj, ctx, defs,
 				fmt.Sprintf("widget.NewCheck(\"%s\", func(b bool) {})", escapeLabel(c.Text)))
 		},
 	}
@@ -517,7 +517,7 @@ func initDateEntryWidget() WidgetInfo {
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
 			_ = obj.(*widget.DateEntry)
 
-			return widgetRef(c.Metadata()[obj], defs, "widget.NewDateEntry()")
+			return widgetRef(obj, c, defs, "widget.NewDateEntry()")
 		},
 	}
 }
@@ -573,7 +573,7 @@ func initEntryWidget() WidgetInfo {
 			}
 			c.Attrs()[obj] = attrs
 
-			return widgetRef(props, defs, "widget.NewEntry()")
+			return widgetRef(obj, c, defs, "widget.NewEntry()")
 		},
 	}
 }
@@ -740,7 +740,6 @@ func initFormWidget() WidgetInfo {
 			form := obj.(*widget.Form)
 			hidden, _ := strconv.ParseBool(c.Metadata()[obj]["hideButtons"])
 
-			props := c.Metadata()
 			str := &strings.Builder{}
 			str.WriteString("&widget.Form{Items: []*widget.FormItem{")
 			for _, i := range form.Items {
@@ -753,7 +752,7 @@ func initFormWidget() WidgetInfo {
 				str.WriteString(", OnSubmit: func() {}, OnCancel: func() {}")
 			}
 			str.WriteString("}")
-			return widgetRef(props[obj], defs, str.String())
+			return widgetRef(obj, c, defs, str.String())
 		},
 	}
 }
@@ -787,7 +786,7 @@ func initHyperlinkWidget() WidgetInfo {
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
 			link := obj.(*widget.Hyperlink)
-			return widgetRef(c.Metadata()[obj], defs, fmt.Sprintf(`widget.NewHyperlink("%s", %#v)`, escapeLabel(link.Text), link.URL))
+			return widgetRef(obj, c, defs, fmt.Sprintf(`widget.NewHyperlink("%s", %#v)`, escapeLabel(link.Text), link.URL))
 		},
 		Packages: func(_ fyne.CanvasObject, _ Context) []string {
 			return []string{"net/url"}
@@ -814,7 +813,7 @@ func initIconWidget() WidgetInfo {
 			i := obj.(*widget.Icon)
 
 			res := "theme." + IconName(i.Resource) + "()"
-			return widgetRef(c.Metadata()[obj], defs, fmt.Sprintf("widget.NewIcon(%s)", res))
+			return widgetRef(obj, c, defs, fmt.Sprintf("widget.NewIcon(%s)", res))
 		},
 		Packages: func(obj fyne.CanvasObject, _ Context) []string {
 			return []string{"widget", "theme"}
@@ -912,7 +911,6 @@ func initLabelWidget() WidgetInfo {
 			}
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
-			props := c.Metadata()[obj]
 			l := obj.(*widget.Label)
 			if l.Alignment != fyne.TextAlignLeading || l.Wrapping != fyne.TextWrapOff {
 				styles := []string{}
@@ -936,15 +934,15 @@ func initLabelWidget() WidgetInfo {
 					}
 					style += "}"
 				}
-				return widgetRef(props, defs,
+				return widgetRef(obj, c, defs,
 					fmt.Sprintf("&widget.Label{Text: \"%s\"%s, Alignment: %d, Wrapping: %d}", escapeLabel(l.Text), style, l.Alignment, l.Wrapping))
 			}
 
 			if l.TextStyle.Bold || l.TextStyle.Italic || l.TextStyle.Monospace {
-				return widgetRef(props, defs,
+				return widgetRef(obj, c, defs,
 					fmt.Sprintf("widget.NewLabelWithStyle(\"%s\", %d, %#v)", escapeLabel(l.Text), l.Alignment, l.TextStyle))
 			}
-			return widgetRef(props, defs,
+			return widgetRef(obj, c, defs,
 				fmt.Sprintf("widget.NewLabel(\"%s\")", escapeLabel(l.Text)))
 		},
 	}
@@ -974,7 +972,7 @@ func initProgressBarWidget() WidgetInfo {
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
 			p := obj.(*widget.ProgressBar)
-			return widgetRef(c.Metadata()[obj], defs,
+			return widgetRef(obj, c, defs,
 				fmt.Sprintf("&widget.ProgressBar{Value: %f}", p.Value))
 		},
 	}
@@ -992,7 +990,7 @@ func initProgressBarInfiniteWidget() WidgetInfo {
 			return []*widget.FormItem{}
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
-			return widgetRef(c.Metadata()[obj], defs, "widget.NewProgressBarInfinite()")
+			return widgetRef(obj, c, defs, "widget.NewProgressBarInfinite()")
 		},
 	}
 }
@@ -1030,7 +1028,7 @@ func initRadioGroupWidget() WidgetInfo {
 			for _, v := range r.Options {
 				opts = append(opts, escapeLabel(v))
 			}
-			return widgetRef(c.Metadata()[obj], defs,
+			return widgetRef(obj, c, defs,
 				fmt.Sprintf("widget.NewRadioGroup([]string{%s}, func(s string) {})", "\""+strings.Join(opts, "\", \"")+"\""))
 		},
 	}
@@ -1085,7 +1083,7 @@ func initRichTextWidget() WidgetInfo {
 			}
 			c.Attrs()[obj] = attrs
 
-			return widgetRef(props, defs, fmt.Sprintf("widget.NewRichTextFromMarkdown(%q)", props["text"]))
+			return widgetRef(obj, c, defs, fmt.Sprintf("widget.NewRichTextFromMarkdown(%q)", props["text"]))
 		},
 	}
 }
@@ -1122,7 +1120,6 @@ func initSelectWidget() WidgetInfo {
 			}
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
-			props := c.Metadata()[obj]
 			s := obj.(*widget.Select)
 			var opts []string
 			for _, v := range s.Options {
@@ -1131,12 +1128,12 @@ func initSelectWidget() WidgetInfo {
 
 			optionString := "\"" + strings.Join(opts, "\", \"") + "\""
 			if s.Selected == "" {
-				return widgetRef(props, defs,
+				return widgetRef(obj, c, defs,
 					fmt.Sprintf("widget.NewSelect([]string{%s}, func(s string) {})", optionString))
 			}
 
 			format := "&widget.Select{Options: []string{%s}, Selected: \"%s\", OnChanged: func(s string) {}}"
-			return widgetRef(props, defs, fmt.Sprintf(format, optionString, s.Selected))
+			return widgetRef(obj, c, defs, fmt.Sprintf(format, optionString, s.Selected))
 		},
 	}
 }
@@ -1182,7 +1179,7 @@ func initSliderWidget() WidgetInfo {
 			if slider.Orientation == widget.Vertical {
 				orient = "widget.Vertical"
 			}
-			return widgetRef(c.Metadata()[obj], defs, fmt.Sprintf("&widget.Slider{Min:0, Max:100, Value:%f, Orientation: %s}", slider.Value, orient))
+			return widgetRef(obj, c, defs, fmt.Sprintf("&widget.Slider{Min:0, Max:100, Value:%f, Orientation: %s}", slider.Value, orient))
 		},
 	}
 }
@@ -1209,7 +1206,7 @@ func initTextGridWidget() WidgetInfo {
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
 			to := obj.(*widget.TextGrid)
-			return widgetRef(c.Metadata()[obj], defs,
+			return widgetRef(obj, c, defs,
 				fmt.Sprintf("widget.NewTextGrid(\"%s\")", escapeLabel(to.Text())))
 		},
 	}
@@ -1328,7 +1325,7 @@ func initToolbarWidget() WidgetInfo {
 				}
 			}
 			str.WriteString(")")
-			return widgetRef(c.Metadata()[obj], defs, str.String())
+			return widgetRef(obj, c, defs, str.String())
 		},
 	}
 }
@@ -1356,13 +1353,26 @@ func extractNames(in map[string]WidgetInfo) []string {
 	return widgetNamesFromData
 }
 
-func widgetRef(props map[string]string, defs map[string]string, code string) string {
+func widgetRef(obj fyne.CanvasObject, c Context, defs map[string]string, code string) string {
+	props := c.Metadata()[obj]
 	if name := props["name"]; name != "" {
 		defs[name] = code
 		if props["name-is-generated"] != "" {
 			return name
 		}
 		return "g." + name
+	}
+
+	attrs := c.Attrs()[obj]
+	if len(attrs) > 0 {
+		log.Println("Need name for", attrs)
+		name := tools.VarNames.Get(obj)
+		props["name-is-generated"] = "1"
+		props["name"] = name
+
+		defs[name] = code
+		c.Metadata()[obj] = props
+		return name
 	}
 
 	return code

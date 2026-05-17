@@ -111,24 +111,11 @@ func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d Context, name stri
 		battrs[obj] = attrs
 	}
 
-	genids := make(map[string]bool)
 	deps := make(map[string]int)
 	for obj, props := range d.Metadata() {
 		name := props["name"]
-		if name == "" {
-			name = tools.VarNames.Get(obj)
-			props["name-is-generated"] = "1"
-		}
+
 		deps[name] = countContainers(obj)
-
-		if props["name"] == name {
-			continue
-		}
-
-		genids[name] = true
-		props["name"] = name
-
-		d.Metadata()[obj] = props
 	}
 
 	defs := make(map[string]string)
@@ -138,11 +125,16 @@ func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d Context, name stri
 	setupBeforeMap := make(map[string]string)
 	setupAfterMap := make(map[string]string)
 
-	for name := range genids {
-		if deps[name] > 0 {
-			setupAfterMap[name] = name + " := " + defs[name]
-		} else {
-			setupBeforeMap[name] = name + " := " + defs[name]
+	genids := make(map[string]bool)
+	for _, p := range d.Metadata() {
+		if g, ok := p["name-is-generated"]; ok && g == "1" {
+			genids[name] = true
+			name := p["name"]
+			if deps[name] > 0 {
+				setupAfterMap[name] = name + " := " + defs[name]
+			} else {
+				setupBeforeMap[name] = name + " := " + defs[name]
+			}
 		}
 	}
 
@@ -172,7 +164,7 @@ func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d Context, name stri
 	attrs := []string{}
 	for obj, props := range d.Metadata() {
 		id := "g." + props["name"]
-		if genids[props["name"]] {
+		if g, ok := props["name-is-generated"]; ok && g == "1" {
 			id = props["name"]
 		}
 
