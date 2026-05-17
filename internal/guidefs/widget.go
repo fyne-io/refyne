@@ -1365,7 +1365,6 @@ func widgetRef(obj fyne.CanvasObject, c Context, defs map[string]string, code st
 
 	attrs := c.Attrs()[obj]
 	if len(attrs) > 0 {
-		log.Println("Need name for", attrs)
 		name := tools.VarNames.Get(obj)
 		props["name-is-generated"] = "1"
 		props["name"] = name

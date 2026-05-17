@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"fyne.io/fyne/v2/container"
 	"github.com/fyne-io/refyne/internal/guidefs"
 	"github.com/fyne-io/refyne/internal/tools"
 
@@ -63,12 +64,28 @@ func main() {
 }
 
 func countContainers(obj fyne.CanvasObject) int {
-	con, ok := obj.(*fyne.Container)
-	if !ok {
+	var children []fyne.CanvasObject
+	switch c := obj.(type) {
+	case *fyne.Container:
+		children = c.Objects
+	case *container.AppTabs:
+		children = make([]fyne.CanvasObject, len(c.Items))
+		for i, c := range c.Items {
+			children[i] = c.Content
+		}
+	case *container.DocTabs:
+		children = make([]fyne.CanvasObject, len(c.Items))
+		for i, c := range c.Items {
+			children[i] = c.Content
+		}
+	case *container.Scroll:
+		children = []fyne.CanvasObject{c.Content}
+	default:
 		return 0
 	}
+
 	r := 1
-	for _, obj := range con.Objects {
+	for _, obj := range children {
 		r += countContainers(obj)
 	}
 	return r
