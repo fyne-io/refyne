@@ -10,11 +10,11 @@ import (
 
 func TestVarNames(t *testing.T) {
 	list := &widget.List{}
-	assert.Equal(t, "List1", VarNames.Get(list))
-	assert.Equal(t, "List2", VarNames.Get(&widget.List{}))
-	assert.Equal(t, "Button1", VarNames.Get(&widget.Button{}))
-	assert.Equal(t, "List1", VarNames.Get(list))
+	assert.Equal(t, "list1", VarNames.Get(list))
+	assert.Equal(t, "list2", VarNames.Get(&widget.List{}))
+	assert.Equal(t, "button1", VarNames.Get(&widget.Button{}))
+	assert.Equal(t, "list1", VarNames.Get(list))
 
 	VarNames.Reset()
-	assert.Equal(t, "List1", VarNames.Get(&widget.List{}))
+	assert.Equal(t, "list1", VarNames.Get(&widget.List{}))
 }

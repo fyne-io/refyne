@@ -43,7 +43,7 @@ func (vn *VarNameGen) Get(obj fyne.CanvasObject) string {
 	t := s[i+1:]
 
 	vn.c[t]++
-	vn.m[obj] = t + strconv.Itoa(vn.c[t])
+	vn.m[obj] = strings.ToLower(t) + strconv.Itoa(vn.c[t])
 
 	return vn.m[obj]
 }
