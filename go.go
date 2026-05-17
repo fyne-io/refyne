@@ -18,6 +18,8 @@ import (
 func ExportGo(obj fyne.CanvasObject, d Context, name string, w io.Writer) error {
 	guidefs.InitOnce()
 
+	tools.VarNames.Reset()
+
 	packagesList := packagesRequired(obj, d)
 
 	// Really this needs to be a full dependency analysis but for now a simple sort of widgets before containers may work
@@ -60,6 +62,35 @@ func main() {
 	return err
 }
 
+func countContainers(obj fyne.CanvasObject) int {
+	con, ok := obj.(*fyne.Container)
+	if !ok {
+		return 0
+	}
+	r := 1
+	for _, obj := range con.Objects {
+		r += countContainers(obj)
+	}
+	return r
+}
+
+func stringMapToSlice(m map[string]string, fn func(a, b string) bool) []string {
+	keys := make([]string, len(m))
+	n := 0
+	for key := range m {
+		keys[n] = key
+		n++
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return fn(keys[i], keys[j])
+	})
+	r := make([]string, len(keys))
+	for i, key := range keys {
+		r[i] = m[key]
+	}
+	return r
+}
+
 func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d Context, name string) string {
 	for i := 0; i < len(pkgs); i++ {
 		if pkgs[i] == "xWidget" {
@@ -75,23 +106,94 @@ func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d Context, name stri
 		pkgs[i] = fmt.Sprintf(`	"%s"`, pkgs[i])
 	}
 
+	battrs := make(map[fyne.CanvasObject][]string)
+	for obj, attrs := range d.Attrs() {
+		battrs[obj] = attrs
+	}
+
+	genids := make(map[string]bool)
+	deps := make(map[string]int)
+	for obj, props := range d.Metadata() {
+		name := props["name"]
+		if name == "" {
+			name = tools.VarNames.Get(obj)
+			props["name-is-generated"] = "1"
+		}
+		deps[name] = countContainers(obj)
+
+		if props["name"] == name {
+			continue
+		}
+
+		genids[name] = true
+		props["name"] = name
+
+		d.Metadata()[obj] = props
+	}
+
 	defs := make(map[string]string)
 
 	_, clazz := getTypeOf(obj)
 	main := guidefs.GoString(clazz, obj, d, defs)
-	setup := ""
+	setupBeforeMap := make(map[string]string)
+	setupAfterMap := make(map[string]string)
 
-	keys := make([]string, len(defs))
-	i := 0
-	for k := range defs {
-		keys[i] = k
-		i++
+	for name := range genids {
+		if deps[name] > 0 {
+			setupAfterMap[name] = name + " := " + defs[name]
+		} else {
+			setupBeforeMap[name] = name + " := " + defs[name]
+		}
 	}
-	sort.Strings(keys)
 
 	for _, key := range vars {
 		name := strings.Split(key, " ")[0]
-		setup += "g." + name + " = " + defs[name] + "\n"
+		if genids[name] {
+			continue
+		}
+		if deps[name] > 0 {
+			setupAfterMap[name] = "g." + name + " = " + defs[name]
+		} else {
+			setupBeforeMap[name] = "g." + name + " = " + defs[name]
+		}
+	}
+
+	setupBefore := stringMapToSlice(setupBeforeMap, func(a, b string) bool {
+		return a < b
+	})
+
+	setupAfter := stringMapToSlice(setupAfterMap, func(a, b string) bool {
+		if deps[a] == deps[b] {
+			return a < b
+		}
+		return deps[a] < deps[b]
+	})
+
+	attrs := []string{}
+	for obj, props := range d.Metadata() {
+		id := "g." + props["name"]
+		if genids[props["name"]] {
+			id = props["name"]
+		}
+
+		for _, attr := range d.Attrs()[obj] {
+			attrs = append(attrs, id+"."+attr)
+		}
+	}
+	sort.Strings(attrs)
+
+	for obj, attrs := range battrs {
+		d.Attrs()[obj] = attrs
+	}
+
+	for obj, props := range d.Metadata() {
+		if props["name-is-generated"] != "1" {
+			continue
+		}
+		delete(props, "name-is-generated")
+		delete(props, "name")
+
+		d.Metadata()[obj] = props
 	}
 
 	guiName := "gui"
@@ -125,7 +227,9 @@ func wrapLayout(l func([]fyne.CanvasObject, fyne.Size), m func([]fyne.CanvasObje
 		GuiName      string
 		GuiNameUpper string
 		Vars         []string
-		Setup        string
+		Attrs        []string
+		SetupBefore  []string
+		SetupAfter   []string
 		Main         string
 	}{
 		Pkgs:         pkgs,
@@ -133,7 +237,9 @@ func wrapLayout(l func([]fyne.CanvasObject, fyne.Size), m func([]fyne.CanvasObje
 		GuiName:      guiName,
 		GuiNameUpper: guiNameUpper,
 		Vars:         vars,
-		Setup:        setup,
+		Attrs:        attrs,
+		SetupBefore:  setupBefore,
+		SetupAfter:   setupAfter,
 		Main:         main,
 	}
 	code, err := tools.RenderCode(`// auto-generated
@@ -163,7 +269,16 @@ func new{{.GuiNameUpper}}GUI() *{{.GuiName}} {
 }
 
 func (g *{{.GuiName}}) makeUI() fyne.CanvasObject {
-	{{.Setup}}
+	{{ range .SetupBefore -}}
+	{{.}}
+	{{ end -}}
+	{{ range .SetupAfter -}}
+	{{.}}
+	{{ end -}}
+
+	{{- range .Attrs}}
+		{{.}}
+	{{- end}}
 
 	return {{.Main}}
 }`, data)
