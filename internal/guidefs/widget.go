@@ -406,18 +406,20 @@ func initButtonWidget() WidgetInfo {
 			props := c.Metadata()[obj]
 			b := obj.(*widget.Button)
 
+			attrs := c.Attrs()[obj]
 			if fn := props["OnTapped"]; fn != "" {
-				setAttr(c.Attrs(), obj, "OnTapped", " = "+fn)
+				attrs = append(attrs, "OnTapped = "+fn)
 			}
 			if b.Icon != nil {
-				setAttr(c.Attrs(), obj, "Icon", " = theme."+IconName(b.Icon)+"()")
+				attrs = append(attrs, "Icon = theme."+IconName(b.Icon)+"()")
 			}
 			if b.Importance != widget.MediumImportance {
-				setAttr(c.Attrs(), obj, "Importance", fmt.Sprintf(" = %d", b.Importance))
+				attrs = append(attrs, fmt.Sprintf("Importance = %d", b.Importance))
 			}
 			if b.Alignment != widget.ButtonAlignCenter {
-				setAttr(c.Attrs(), obj, "Alignment", fmt.Sprintf(" = %d", b.Alignment))
+				attrs = append(attrs, fmt.Sprintf("Alignment = %d", b.Alignment))
 			}
+			c.Attrs()[obj] = attrs
 
 			return widgetRef(obj, c, defs, fmt.Sprintf("widget.NewButton(%q, nil)", b.Text))
 		},
@@ -551,23 +553,25 @@ func initEntryWidget() WidgetInfo {
 			l := obj.(*widget.Entry)
 			props := c.Metadata()[obj]
 
+			attrs := c.Attrs()[obj]
 			for _, on := range []string{"OnChanged", "OnSubmitted"} {
 				if props[on] != "" {
-					setAttr(c.Attrs(), obj, on, " = "+props[on])
+					attrs = append(attrs, on+" = "+props[on])
 				}
 			}
 			if l.Text != "" {
-				setAttr(c.Attrs(), obj, "Text", fmt.Sprintf(" = %q", l.Text))
+				attrs = append(attrs, fmt.Sprintf("Text = %q", l.Text))
 			}
 			if l.PlaceHolder != "" {
-				setAttr(c.Attrs(), obj, "PlaceHolder", fmt.Sprintf(" = %q", l.PlaceHolder))
+				attrs = append(attrs, fmt.Sprintf("PlaceHolder = %q", l.PlaceHolder))
 			}
 			if l.MultiLine {
-				setAttr(c.Attrs(), obj, "MultiLine", " = true")
+				attrs = append(attrs, "MultiLine = true")
 			}
 			if l.Password {
-				setAttr(c.Attrs(), obj, "Password", " = true")
+				attrs = append(attrs, "Password = true")
 			}
+			c.Attrs()[obj] = attrs
 
 			return widgetRef(obj, c, defs, "widget.NewEntry()")
 		},
