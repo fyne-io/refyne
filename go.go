@@ -191,6 +191,12 @@ func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d Context, name stri
 	}
 	sort.Strings(attrs)
 
+	for obj := range d.Attrs() {
+		if _, exists := battrs[obj]; !exists {
+			delete(d.Attrs(), obj)
+		}
+	}
+
 	for obj, attrs := range battrs {
 		d.Attrs()[obj] = attrs
 	}
