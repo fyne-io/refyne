@@ -540,7 +540,7 @@ func (g *whatGui) makeUI() fyne.CanvasObject {
 
 	return container.NewVBox(
 		&widget.Form{Items: []*widget.FormItem{widget.NewFormItem("Foo",
-			widget.NewEntry())}, OnSubmit: func() {}, OnCancel: func() {}, Orientation: 2})
+			widget.NewEntry())}, OnSubmit: func() {}, OnCancel: func() {}, Orientation: widget.Adaptive})
 }
 `
 	assert.Equal(t, exp, buf.String())

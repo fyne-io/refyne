@@ -840,12 +840,8 @@ func initFormWidget() WidgetInfo {
 				str.WriteString(", OnSubmit: func() {}, OnCancel: func() {}")
 			}
 			if o := c.Metadata()[obj]["Orientation"]; o != "" && o != "Horizontal" {
-				switch o {
-				case "Vertical":
-					fmt.Fprintf(str, ", Orientation: %v", widget.Vertical)
-				case "Adaptive":
-					fmt.Fprintf(str, ", Orientation: %v", widget.Adaptive)
-				}
+				str.WriteString(", Orientation: widget.")
+				str.WriteString(o)
 			}
 			str.WriteString("}")
 			return widgetRef(obj, c, defs, str.String())
