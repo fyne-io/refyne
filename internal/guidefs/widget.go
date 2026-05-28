@@ -707,6 +707,26 @@ func initFormWidget() WidgetInfo {
 			}
 			hideButtons := widget.NewFormItem("Hide buttons", hide)
 
+			orientation := widget.NewSelect([]string{"Horizontal", "Vertical", "Adaptive"}, nil)
+			if s := props["Orientation"]; s != "" {
+				orientation.SetSelected(s)
+			}
+			orientation.OnChanged = func(s string) {
+				switch s {
+				case "Horizontal":
+					form.Orientation = widget.Horizontal
+					delete(props, "Orientation")
+				case "Vertical":
+					form.Orientation = widget.Vertical
+					props["Orientation"] = s
+				case "Adaptive":
+					form.Orientation = widget.Adaptive
+					props["Orientation"] = s
+				}
+				form.Refresh()
+			}
+			orientationSelect := widget.NewFormItem("Orientation", hide)
+
 			add.OnTapped = func() {
 				insertChose := ""
 				name := widget.NewEntry()
@@ -802,7 +822,7 @@ func initFormWidget() WidgetInfo {
 				items = append(items, widget.NewFormItem(o.Text, row))
 			}
 
-			return append(items, hideButtons, addLine)
+			return append(items, hideButtons, orientationSelect, addLine)
 		},
 		Gostring: func(obj fyne.CanvasObject, c Context, defs map[string]string) string {
 			form := obj.(*widget.Form)
@@ -818,6 +838,14 @@ func initFormWidget() WidgetInfo {
 			str.WriteString("}")
 			if !hidden {
 				str.WriteString(", OnSubmit: func() {}, OnCancel: func() {}")
+			}
+			if o := c.Metadata()[obj]["Orientation"]; o != "" && o != "Horizontal" {
+				switch o {
+				case "Vertical":
+					fmt.Fprintf(str, ", Orientation: %v", widget.Vertical)
+				case "Adaptive":
+					fmt.Fprintf(str, ", Orientation: %v", widget.Adaptive)
+				}
 			}
 			str.WriteString("}")
 			return widgetRef(obj, c, defs, str.String())
