@@ -1497,6 +1497,9 @@ func extractNames(in map[string]WidgetInfo) []string {
 
 func widgetRef(obj fyne.CanvasObject, c Context, defs map[string]string, code string) string {
 	props := c.Metadata()[obj]
+	if props == nil {
+		props = make(map[string]string)
+	}
 	if name := props["name"]; name != "" {
 		defs[name] = code
 		if props["name-is-generated"] != "" {
