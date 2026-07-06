@@ -515,6 +515,20 @@ func EncodeMap(obj fyne.CanvasObject, d Context) (interface{}, error) {
 		node.Struct["Trailing"], _ = EncodeMap(c.Trailing, d)
 
 		return &node, nil
+	case *widget.Card:
+		node := &cntObj{Struct: make(map[string]interface{})}
+		node.Type = "*widget.Card"
+		node.Name = name
+		node.Struct["Title"] = c.Title
+		node.Struct["Subtitle"] = c.Subtitle
+		if c.Image != nil {
+			node.Struct["Image"], _ = EncodeMap(c.Image, d)
+		}
+		if c.Content != nil {
+			node.Struct["Content"], _ = EncodeMap(c.Content, d)
+		}
+
+		return &node, nil
 	case fyne.Widget:
 		if form, ok := c.(*widget.Form); ok {
 			return encodeForm(form, name, props), nil
@@ -754,8 +768,20 @@ func decodeFields(e reflect.Value, in map[string]interface{}, d Context) error {
 				items = append(items, obj)
 			}
 			f.Set(reflect.ValueOf(items))
-		case "fyne.CanvasObject":
-			return errors.New("unsupported object type in field: " + k)
+		case "fyne.CanvasObject", "*canvas.Image":
+			if v == nil {
+				continue
+			}
+			child, err := DecodeMap(v.(map[string]interface{}), d)
+			if err != nil {
+				return err
+			}
+			if child != nil {
+				cv := reflect.ValueOf(child)
+				if cv.Type().AssignableTo(f.Type()) {
+					f.Set(cv)
+				}
+			}
 		case "*url.URL":
 			u := &url.URL{}
 			decodeFromMap(reflect.ValueOf(v).Interface().(map[string]interface{}), u)
