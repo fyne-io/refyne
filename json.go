@@ -658,7 +658,7 @@ func decodeTextStyle(m map[string]interface{}) (s fyne.TextStyle) {
 		s.Monospace = true
 	}
 
-	if m["TabWidth"] != 0 {
+	if m["TabWidth"] != nil && m["TabWidth"] != 0 {
 		s.TabWidth = int(m["TabWidth"].(float64))
 	}
 	return
