@@ -469,6 +469,17 @@ func initButtonWidget() WidgetInfo {
 func initCardWidget() WidgetInfo {
 	return WidgetInfo{
 		Name: "Card",
+		Children: func(o fyne.CanvasObject) []fyne.CanvasObject {
+			c := o.(*widget.Card)
+			if c.Content == nil {
+				return nil
+			}
+			return []fyne.CanvasObject{c.Content}
+		},
+		AddChild: func(parent, o fyne.CanvasObject) {
+			c := parent.(*widget.Card)
+			c.SetContent(o)
+		},
 		Create: func(Context) fyne.CanvasObject {
 			return widget.NewCard("Title", "Subtitle", widget.NewLabel("Content here"))
 		},
@@ -493,8 +504,12 @@ func initCardWidget() WidgetInfo {
 		},
 		Gostring: func(obj fyne.CanvasObject, ctx Context, defs map[string]string) string {
 			c := obj.(*widget.Card)
-			return widgetRef(obj, ctx, defs, fmt.Sprintf("widget.NewCard(\"%s\", \"%s\", widget.NewLabel(\"Content here\"))",
+			str := &strings.Builder{}
+			str.WriteString(fmt.Sprintf("widget.NewCard(\"%s\", \"%s\", ",
 				escapeLabel(c.Title), escapeLabel(c.Subtitle)))
+			writeGoStringOrNil(str, ctx, defs, c.Content)
+			str.WriteString(")")
+			return widgetRef(obj, ctx, defs, str.String())
 		},
 	}
 }
