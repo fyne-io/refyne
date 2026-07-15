@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"go/format"
 	"io"
+	"math/rand"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 
 	"fyne.io/fyne/v2/container"
@@ -50,7 +52,7 @@ func ExportGoPreview(obj fyne.CanvasObject, d Context, w io.Writer) error {
 
 	code += `
 func main() {
-	a := app.New()
+	a := app.NewWithID("dummy-` + strconv.Itoa(rand.Int()) + `")
 	w := a.NewWindow("Hello")
 	gui := newGUI()
 	gui.win = w
@@ -145,8 +147,8 @@ func exportCode(pkgs, vars []string, obj fyne.CanvasObject, d Context, name stri
 	genids := make(map[string]bool)
 	for _, p := range d.Metadata() {
 		if g, ok := p["name-is-generated"]; ok && g == "1" {
-			genids[name] = true
 			name := p["name"]
+			genids[name] = true
 			if deps[name] > 0 {
 				setupAfterMap[name] = name + " := " + defs[name]
 			} else {
