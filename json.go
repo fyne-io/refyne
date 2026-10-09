@@ -787,12 +787,14 @@ func decodeFields(e reflect.Value, in map[string]interface{}, d Context) error {
 			decodeFromMap(reflect.ValueOf(v).Interface().(map[string]interface{}), u)
 			f.Set(reflect.ValueOf(u))
 		case "[]string":
-			anySlice := reflect.ValueOf(v).Interface().([]interface{})
-			strings := make([]string, len(anySlice))
-			for i, a := range anySlice {
-				strings[i] = a.(string)
+			if v != nil {
+				anySlice := reflect.ValueOf(v).Interface().([]interface{})
+				strings := make([]string, len(anySlice))
+				for i, a := range anySlice {
+					strings[i] = a.(string)
+				}
+				f.Set(reflect.ValueOf(strings))
 			}
-			f.Set(reflect.ValueOf(strings))
 		case "time.Time", "*time.Time":
 			s := reflect.ValueOf(v).String()
 
